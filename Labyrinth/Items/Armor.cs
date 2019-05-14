@@ -1,4 +1,7 @@
-﻿namespace Labyrinth
+﻿using System.Data;
+using System.Linq;
+
+namespace Labyrinth
 {
     class Armor : Item
     {
@@ -29,7 +32,10 @@
                 ArmorType = ArmorType.Leather;
             }
 
-            SetDefense();
+            DataRow entry = ArmorDao.GetTable().Select($"{nameof(ArmorType)} = '{ArmorType}'").FirstOrDefault();
+            
+            Defense = (int)entry[nameof(Defense)];
+            Value = (int)entry[nameof(Value)];
         }
 
         /// <summary>
@@ -38,27 +44,11 @@
         /// <param name="type">The type of armor to create</param>
         public Armor(ArmorType type) : base(ItemType.Armor)
         {
-            ArmorType = type;
-            SetDefense();
-        }
+            DataRow entry = ArmorDao.GetTable().Select($"{nameof(ArmorType)} = '{type}'").FirstOrDefault();
 
-        /// <summary>
-        /// Sets the <see cref="Defense"/> property according to the <see cref="ArmorType"/>
-        /// </summary>
-        private void SetDefense()
-        {
-            switch (ArmorType)
-            {
-                case ArmorType.Leather:
-                    Defense = 3;
-                    break;
-                case ArmorType.Chain:
-                    Defense = 6;
-                    break;
-                case ArmorType.Iron:
-                    Defense = 9;
-                    break;
-            }
+            ArmorType = type;
+            Defense = (int)entry[nameof(Defense)];
+            Value = (int)entry[nameof(Value)];
         }
     }
 }

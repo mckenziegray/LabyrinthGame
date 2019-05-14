@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
 
 namespace Labyrinth
 {
@@ -32,7 +33,7 @@ namespace Labyrinth
         /// <param name="type">The type of <see cref="Enemy"/> to construct</param>
         public Enemy(EnemyType type)
         {
-            DataRow entry = EnemyDao.GetTable().Select($"{nameof(EnemyType)} = '{type}'")[0];
+            DataRow entry = EnemyDao.GetTable().Select($"{nameof(EnemyType)} = '{type}'").FirstOrDefault();
 
             EnemyType = type;
             Description = (string)entry[nameof(Description)];

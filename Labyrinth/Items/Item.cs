@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Labyrinth
@@ -13,22 +13,12 @@ namespace Labyrinth
         public const float BOW_DAMAGE_MULTIPLIER = 1.5f;
         public const int POTION_HEAL_AMOUNT = 10;
 
-        private Random m_random = new Random();
+        private int MaxInitialCount;
 
         public ItemType ItemType { get; private set; }
-        public int Count { get; set; }
-        public int Value { get; private set; } //TODO: Set Value for all item types
-
-        /// <summary>
-        /// True if more than one of the item can be held; false otherwise
-        /// </summary>
-        public bool Stackable
-        {
-            get
-            {
-                return ItemType == ItemType.Arrows || ItemType == ItemType.Gold || ItemType == ItemType.Potions;
-            }
-        }
+        public int Value { get; protected set; } //TODO: Set Value for all item types
+        public bool Stackable;
+        public int Count;
 
         /// <summary>
         /// Creates an <see cref="Item"/> object of a particular type with a random count, if applicable
@@ -36,12 +26,15 @@ namespace Labyrinth
         /// <param name="type">The type of object to create</param>
         public Item(ItemType type)
         {
-            ItemType = type;
+            DataRow entry = ItemDao.GetTable().Select($"{nameof(ItemType)} = '{type}'").FirstOrDefault();
 
-            if (type == ItemType.Gold)
-                Count = m_random.Next(1, MAX_INITIAL_GOLD);
-            else if (type == ItemType.Arrows)
-                Count = m_random.Next(1, MAX_INITIAL_ARROWS);
+            ItemType = type;
+            Value = (int)entry[nameof(Value)];
+            Stackable = (bool)entry[nameof(Stackable)];
+            MaxInitialCount = (int)entry[nameof(MaxInitialCount)];
+
+            if (Stackable)
+                Count = Utils.Random.Next(1, MaxInitialCount);
             else
                 Count = 1;
         }
@@ -52,8 +45,8 @@ namespace Labyrinth
         /// <param name="type">The type of item to create</param>
         /// <param name="count">The count for the item</param>
         public Item(ItemType type, int count)
+            : this(type)
         {
-            ItemType = type;
             Count = count;
         }
 

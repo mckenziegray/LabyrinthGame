@@ -1,4 +1,7 @@
-﻿namespace Labyrinth
+﻿using System.Data;
+using System.Linq;
+
+namespace Labyrinth
 {
     class Weapon : Item
     {
@@ -29,7 +32,10 @@
                 WeaponType = WeaponType.Dagger;
             }
 
-            SetDamage();
+            DataRow entry = WeaponDao.GetTable().Select($"{nameof(WeaponType)} = '{WeaponType}'").FirstOrDefault();
+            
+            Damage = (int)entry[nameof(Damage)];
+            Value = (int)entry[nameof(Value)];
         }
 
         /// <summary>
@@ -38,27 +44,11 @@
         /// <param name="type"></param>
         public Weapon(WeaponType type) : base(ItemType.Weapon)
         {
-            WeaponType = type;
-            SetDamage();
-        }
+            DataRow entry = WeaponDao.GetTable().Select($"{nameof(WeaponType)} = '{type}'").FirstOrDefault();
 
-        /// <summary>
-        /// Sets the <see cref="Damage"/> property based on the <see cref="WeaponType"/>
-        /// </summary>
-        private void SetDamage()
-        {
-            switch (WeaponType)
-            {
-                case WeaponType.Dagger:
-                    Damage = 5;
-                    break;
-                case WeaponType.Sword:
-                    Damage = 10;
-                    break;
-                case WeaponType.Axe:
-                    Damage = 10;
-                    break;
-            }
+            WeaponType = type;
+            Damage = (int)entry[nameof(Damage)];
+            Value = (int)entry[nameof(Value)];
         }
     }
 }

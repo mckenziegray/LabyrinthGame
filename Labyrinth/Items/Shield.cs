@@ -1,4 +1,7 @@
-﻿namespace Labyrinth
+﻿using System.Data;
+using System.Linq;
+
+namespace Labyrinth
 {
     class Shield : Item
     {
@@ -23,7 +26,10 @@
                 ShieldType = ShieldType.Wood;
             }
 
-            SetDefense();
+            DataRow entry = ShieldDao.GetTable().Select($"{nameof(ShieldType)} = '{ShieldType}'").FirstOrDefault();
+            
+            Defense = (int)entry[nameof(Defense)];
+            Value = (int)entry[nameof(Value)];
         }
 
         /// <summary>
@@ -32,24 +38,11 @@
         /// <param name="type">The type of <see cref="Shield"/> to construct</param>
         public Shield(ShieldType type) : base(ItemType.Shield)
         {
-            ShieldType = type;
-            SetDefense();
-        }
+            DataRow entry = ShieldDao.GetTable().Select($"{nameof(ShieldType)} = '{type}'").FirstOrDefault();
 
-        /// <summary>
-        /// Sets the <see cref="Defense"/> property based on the <see cref="ShieldType"/>
-        /// </summary>
-        private void SetDefense()
-        {
-            switch (ShieldType)
-            {
-                case ShieldType.Wood:
-                    Defense = 4;
-                    break;
-                case ShieldType.Kite:
-                    Defense = 6;
-                    break;
-            }
+            ShieldType = type;
+            Defense = (int)entry[nameof(Defense)];
+            Value = (int)entry[nameof(Value)];
         }
     }
 }
