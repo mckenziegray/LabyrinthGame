@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Linq;
 
 namespace Labyrinth
 {
@@ -27,23 +26,25 @@ namespace Labyrinth
             }
         }
 
+        public Enemy() : base() { }
+
         /// <summary>
         /// Constructs an <see cref="Enemy"/> of the given type
         /// </summary>
         /// <param name="type">The type of <see cref="Enemy"/> to construct</param>
         public Enemy(EnemyType type)
         {
-            DataRow entry = EnemyDao.GetTable().Select($"{nameof(EnemyType)} = '{type}'").FirstOrDefault();
+            EnemyDataEntry enemyData = EnemyDao.GetData()[type];
 
             EnemyType = type;
-            Description = (string)entry[nameof(Description)];
-            Power = (int)entry[nameof(Power)];
+            Description = enemyData.Description;
+            Power = enemyData.Power;
             Defense = 0;
-            MaxHP = (int)entry[nameof(MaxHP)];
+            MaxHP = enemyData.MaxHP;
             CurrentHP = MaxHP;
-            XP = (int)entry[nameof(XP)];
-            Difficulty = (int)entry[nameof(Difficulty)];
-            
+            XP = enemyData.XP;
+            Difficulty = enemyData.Difficulty;
+
             if (Utils.Roll(CHANCE_FOR_LOOT))
             {
                 Item loot = Item.RandomItem(Items);

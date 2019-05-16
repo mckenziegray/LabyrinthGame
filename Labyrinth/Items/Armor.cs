@@ -12,31 +12,7 @@ namespace Labyrinth
 
         public int Defense { get; private set; }
 
-        /// <summary>
-        /// Creates an <see cref="Armor"/> object of a random type
-        /// </summary>
-        public Armor() : base(ItemType.Armor)
-        {
-            float p = Utils.GetRandomPercent();
-
-            if (p < CHANCE_FOR_IRON)
-            {
-                ArmorType = ArmorType.Iron;
-            }
-            else if (p < CHANCE_FOR_IRON + CHANCE_FOR_CHAIN)
-            {
-                ArmorType = ArmorType.Chain;
-            }
-            else
-            {
-                ArmorType = ArmorType.Leather;
-            }
-
-            DataRow entry = ArmorDao.GetTable().Select($"{nameof(ArmorType)} = '{ArmorType}'").FirstOrDefault();
-            
-            Defense = (int)entry[nameof(Defense)];
-            Value = (int)entry[nameof(Value)];
-        }
+        public Armor() : base(ItemType.Armor) { }
 
         /// <summary>
         /// Creates an <see cref="Armor"/> object of a particular type
@@ -44,11 +20,35 @@ namespace Labyrinth
         /// <param name="type">The type of armor to create</param>
         public Armor(ArmorType type) : base(ItemType.Armor)
         {
-            DataRow entry = ArmorDao.GetTable().Select($"{nameof(ArmorType)} = '{type}'").FirstOrDefault();
+            ArmorDataEntry data = ArmorDao.GetData()[type];
 
             ArmorType = type;
-            Defense = (int)entry[nameof(Defense)];
-            Value = (int)entry[nameof(Value)];
+            Defense = data.Defense;
+            Value = data.Value;
+        }
+
+        /// <summary>
+        /// Creates an <see cref="Armor"/> object of a random type
+        /// </summary>
+        public static Armor RandomArmor()
+        {
+            ArmorType type;
+            float p = Utils.GetRandomPercent();
+
+            if (p < CHANCE_FOR_IRON)
+            {
+                type = ArmorType.Iron;
+            }
+            else if (p < CHANCE_FOR_IRON + CHANCE_FOR_CHAIN)
+            {
+                type = ArmorType.Chain;
+            }
+            else
+            {
+                type = ArmorType.Leather;
+            }
+
+            return new Armor(type);
         }
     }
 }

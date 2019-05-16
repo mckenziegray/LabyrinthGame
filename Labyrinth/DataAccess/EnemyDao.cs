@@ -1,14 +1,31 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace Labyrinth
 {
+    /// <summary>
+    /// Stores data for an entry in the Enemy table
+    /// </summary>
+    public class EnemyDataEntry
+    {
+        public EnemyType EnemyType { get; set; }
+        public int MaxHP { get; set; }
+        public int CurrentHP { get; set; }
+        public int Power { get; set; }
+        public int Defense { get; set; }
+        public int XP { get; set; }
+        public string Description { get; set; }
+        public int Difficulty { get; set; }
+    }
+
     /// <summary>
     /// Provides access to the Enemy table in the database
     /// </summary>
     static class EnemyDao
     {
         private static DataTable m_table;
+        private static Dictionary<EnemyType, EnemyDataEntry> m_dataEntries;
 
         /// <summary>
         /// Retrieves the Enemy table from the database
@@ -22,6 +39,20 @@ namespace Labyrinth
             }
 
             return m_table;
+        }
+
+        /// <summary>
+        /// Returns data from the Enemy table as a collection of <see cref="EnemyDataEntry"/>
+        /// </summary>
+        /// <returns>A collection of <see cref="EnemyDataEntry"/> containing Enemy table data</returns>
+        public static Dictionary<EnemyType, EnemyDataEntry> GetData()
+        {
+            if (m_dataEntries == null)
+            {
+                m_dataEntries = Dao.ExtractData<EnemyType, EnemyDataEntry>(GetTable());
+            }
+
+            return m_dataEntries;
         }
 
         /// <summary>

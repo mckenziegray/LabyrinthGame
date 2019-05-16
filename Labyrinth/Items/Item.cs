@@ -20,18 +20,20 @@ namespace Labyrinth
         public bool Stackable;
         public int Count;
 
+        public Item() { }
+
         /// <summary>
         /// Creates an <see cref="Item"/> object of a particular type with a random count, if applicable
         /// </summary>
         /// <param name="type">The type of object to create</param>
         public Item(ItemType type)
         {
-            DataRow entry = ItemDao.GetTable().Select($"{nameof(ItemType)} = '{type}'").FirstOrDefault();
+            ItemDataEntry data = ItemDao.GetData()[type];
 
             ItemType = type;
-            Value = (int)entry[nameof(Value)];
-            Stackable = (bool)entry[nameof(Stackable)];
-            MaxInitialCount = (int)entry[nameof(MaxInitialCount)];
+            Value = data.Value;
+            Stackable = data.Stackable;
+            MaxInitialCount = data.MaxInitialCount;
 
             if (Stackable)
                 Count = Utils.Random.Next(1, MaxInitialCount);
@@ -73,11 +75,11 @@ namespace Labyrinth
                     switch(itemType)
                     {
                         case ItemType.Weapon:
-                            return new Weapon();
+                            return Weapon.RandomWeapon();
                         case ItemType.Armor:
-                            return new Armor();
+                            return Armor.RandomArmor();
                         case ItemType.Shield:
-                            return new Shield();
+                            return Shield.RandomShield();
                         default:
                             return new Item(itemType);
                     }

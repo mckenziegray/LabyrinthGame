@@ -1,5 +1,8 @@
-﻿using System.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 
 namespace Labyrinth
 {
@@ -34,6 +37,34 @@ namespace Labyrinth
             }
 
             return table;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static Dictionary<KeyType, DataEntryType> ExtractData<KeyType, DataEntryType>(DataTable table)
+        {
+            Dictionary<KeyType, DataEntryType> data = new Dictionary<KeyType, DataEntryType>();
+
+            foreach (DataRow row in table.Rows)
+            {
+                DataEntryType dataEntry = (DataEntryType)typeof(DataEntryType).GetConstructor(new Type[0]).Invoke(new object[0]);
+
+                foreach (PropertyInfo prop in typeof(DataEntryType).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)) //TODO: Fix this
+                {
+                    prop.SetValue(dataEntry, Convert.ChangeType(row[prop.Name], prop.PropertyType));
+
+                    if (prop.PropertyType is KeyType)
+                    {
+                        data[(KeyType)prop.GetValue(dataEntry)] = dataEntry;
+                    }
+                }
+            }
+
+            return data;
         }
     }
 }

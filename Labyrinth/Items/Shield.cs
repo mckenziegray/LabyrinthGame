@@ -10,27 +10,7 @@ namespace Labyrinth
         public ShieldType ShieldType { get; private set; }
         public int Defense { get; private set; }
 
-        /// <summary>
-        /// Constructs a <see cref="Shield"/> object of a random type
-        /// </summary>
-        public Shield() : base(ItemType.Shield)
-        {
-            float p = Utils.GetRandomPercent();
-
-            if (p < CHANCE_FOR_KITE)
-            {
-                ShieldType = ShieldType.Kite;
-            }
-            else
-            {
-                ShieldType = ShieldType.Wood;
-            }
-
-            DataRow entry = ShieldDao.GetTable().Select($"{nameof(ShieldType)} = '{ShieldType}'").FirstOrDefault();
-            
-            Defense = (int)entry[nameof(Defense)];
-            Value = (int)entry[nameof(Value)];
-        }
+        public Shield() : base(ItemType.Shield) { }
 
         /// <summary>
         /// Constructs a <see cref="Shield"/> object of the given type
@@ -38,11 +18,31 @@ namespace Labyrinth
         /// <param name="type">The type of <see cref="Shield"/> to construct</param>
         public Shield(ShieldType type) : base(ItemType.Shield)
         {
-            DataRow entry = ShieldDao.GetTable().Select($"{nameof(ShieldType)} = '{type}'").FirstOrDefault();
+            ShieldDataEntry data = ShieldDao.GetData()[type];
 
             ShieldType = type;
-            Defense = (int)entry[nameof(Defense)];
-            Value = (int)entry[nameof(Value)];
+            Defense = data.Defense;
+            Value = data.Value;
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="Shield"/> object of a random type
+        /// </summary
+        public static Shield RandomShield()
+        {
+            ShieldType type;
+            float p = Utils.GetRandomPercent();
+
+            if (p < CHANCE_FOR_KITE)
+            {
+                type = ShieldType.Kite;
+            }
+            else
+            {
+                type = ShieldType.Wood;
+            }
+
+            return new Shield(type);
         }
     }
 }
