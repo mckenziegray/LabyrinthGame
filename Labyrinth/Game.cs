@@ -9,6 +9,7 @@ namespace Labyrinth
         private const int MAZE_SIZE = 200;
         private const float CHANCE_FOR_ENEMY_SPAWN = 0.5f;
         private const float CHANCE_TO_FLEE = 0.9f;
+        private const float CHANCE_FOR_ENEMY_MOVE = 0.7f;
 
         public static bool MinotaurIsAlive = true;
         public static bool DragonIsAlive = true;
@@ -18,6 +19,7 @@ namespace Labyrinth
         private int StartingDifficulty;
         private int Difficulty;
         private int MovesTaken;
+        private BattleResult? BattleResult;
         private Dictionary<char, string> DirectionActions = new Dictionary<char, string>
         {
             { 'N', Direction.North.ToString() },
@@ -72,11 +74,13 @@ namespace Labyrinth
                     .Where(a => Player.Location.Neighbors[(int)Enum.Parse(typeof(Direction), a.Value)] != null)
                     .ToDictionary(a => a.Key, a => a.Value);
 
+                // Player movement
                 DisplayPrompt("Which direction?", possibleDirections);
                 char dirChar = GetInput(possibleDirections.Keys.ToArray());
                 Direction dir = (Direction)Enum.Parse(typeof(Direction), DirectionActions[dirChar]);
                 Location newLocation = Player.Move(dir);
 
+                // Spawn an enemy in the player's location
                 if (newLocation.Enemy == null && Utils.Roll(CHANCE_FOR_ENEMY_SPAWN))
                 {
                     newLocation.Enemy = Enemy.RandomEnemy(Difficulty);
@@ -85,11 +89,11 @@ namespace Labyrinth
                 #region Found an enemy
                 if (Player.Location.Enemy != null)
                 {
-                    BattleResult battleResult = Battle(Player, Player.Location.Enemy);
+                    BattleResult = Battle(Player, Player.Location.Enemy);
 
-                    switch (battleResult)
+                    switch (BattleResult.Value)
                     {
-                        case BattleResult.Won:
+                        case Labyrinth.BattleResult.Won:
                             DisplayMessage($"You defeat the {Player.Location.Enemy.EnemyType}!");
                             Player.GiveXP(Player.Location.Enemy.XP);
 
@@ -98,13 +102,17 @@ namespace Labyrinth
 
                             Player.Location.Enemy = null;
                             break;
-                        case BattleResult.Fled:
+                        case Labyrinth.BattleResult.Fled:
                             DisplayMessage("You ran away.");
                             break;
-                        case BattleResult.Lost:
+                        case Labyrinth.BattleResult.Lost:
                             GameOver();
                             return;
                     }
+                }
+                else
+                {
+                    BattleResult = null;
                 }
 #endregion
 
@@ -163,8 +171,18 @@ namespace Labyrinth
                 MovesTaken++;
 
                 UpdateDifficulty();
-
-                //TODO: Move surviving enemies
+                
+                // Meve enemies
+                if (!(BattleResult != null && BattleResult.Value == Labyrinth.BattleResult.Fled)) // If the player fled, don't move the enemy
+                {                                                                                   // TODO: This should probably only happen for the enemy that was battled, rather than all enemies
+                    foreach (Enemy enemy in Maze.Network.SelectMany(r => r.Select(l => l.Enemy)).Where(e => e != null))
+                    {
+                        if (Utils.Roll(CHANCE_FOR_ENEMY_MOVE))
+                        {
+                            enemy.Move((Direction)Utils.Random.Next(3));
+                        }
+                    }
+                }
             }
 
         }
@@ -229,7 +247,7 @@ namespace Labyrinth
                         if (Utils.Roll(CHANCE_TO_FLEE))
                         {
                             //ClearLines(uiOffset);
-                            return BattleResult.Fled;
+                            return Labyrinth.BattleResult.Fled;
                         }
                         else
                         {
@@ -250,11 +268,11 @@ namespace Labyrinth
 
             if (player.CurrentHP <= 0)
             {
-                return BattleResult.Lost;
+                return Labyrinth.BattleResult.Lost;
             }
             else
             {
-                return BattleResult.Won;
+                return Labyrinth.BattleResult.Won;
             }
         }
 

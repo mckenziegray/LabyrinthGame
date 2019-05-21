@@ -53,7 +53,7 @@ namespace Labyrinth
             {
                 DataEntryType dataEntry = (DataEntryType)typeof(DataEntryType).GetConstructor(new Type[0]).Invoke(new object[0]);
 
-                foreach (PropertyInfo prop in typeof(DataEntryType).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)) //TODO: Fix this
+                foreach (PropertyInfo prop in typeof(DataEntryType).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
                 {
                     prop.SetValue(dataEntry, Convert.ChangeType(row[prop.Name], prop.PropertyType));
 
