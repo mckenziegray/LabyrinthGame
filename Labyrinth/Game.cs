@@ -86,6 +86,16 @@ namespace Labyrinth
                     newLocation.Enemy = Enemy.RandomEnemy(Difficulty);
                 }
 
+                // Room is trapped
+                if (newLocation.IsTrapped)
+                {
+                    DisplayMessage("You feel a plate sink under your foot.");
+                    DisplayMessage("Flames erupt from the floor!");
+                    int trapDamage = Player.Location.Trap.Trigger();
+                    Player.Damage(trapDamage);
+                    DisplayMessage($"You take {trapDamage} points of damage.");
+                }
+
                 #region Found an enemy
                 if (Player.Location.Enemy != null)
                 {
@@ -146,7 +156,7 @@ namespace Labyrinth
                                 if (Player.Location.Chest.IsTrapped)
                                 {
                                     DisplayMessage("The chest was booby-trapped!");
-                                    int trapDamage = Player.Location.Chest.TriggerTrap();
+                                    int trapDamage = Player.Location.Chest.Trap.Trigger();
                                     Player.Damage(trapDamage);
                                     DisplayMessage($"You take {trapDamage} points of damage.");
                                 }

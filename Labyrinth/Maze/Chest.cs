@@ -11,8 +11,15 @@ namespace Labyrinth
         private const int MAX_TRAP_DAMAGE = 3;
 
         public ItemList Items { get; private set; }
-        public bool IsTrapped { get; private set; }
+        public Trap Trap { get; private set; }
         public bool StatusVisible { get; private set; }
+        public bool IsTrapped
+        {
+            get
+            {
+                return Trap != null && Trap.IsActive;
+            }
+        }
 
         public Chest()
         {
@@ -23,17 +30,8 @@ namespace Labyrinth
                 Items.Add(Item.RandomItem(Items));
             }
 
-            IsTrapped = Utils.Roll(CHANCE_FOR_TRAP);
+            Trap = Utils.Roll(CHANCE_FOR_TRAP) ? new Trap(MIN_TRAP_DAMAGE, MAX_TRAP_DAMAGE) : null;
             StatusVisible = Utils.Roll(CHANCE_FOR_VISIBLE_STATUS);
-        }
-
-        public int TriggerTrap()
-        {
-            int damage = IsTrapped ? Utils.Random.Next(MIN_TRAP_DAMAGE, MAX_TRAP_DAMAGE) : 0;
-
-            IsTrapped = false;
-
-            return damage;
         }
     }
 }

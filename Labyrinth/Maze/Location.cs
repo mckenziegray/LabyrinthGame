@@ -4,16 +4,27 @@ namespace Labyrinth
 {
     class Location
     {
-        private float CHANCE_FOR_LOOT = 1f / 6f;
-        private float CHANCE_FOR_DOUBLE_LOOT = 0.2f;
-        private float CHANCE_FOR_CHEST = 1f / 3f;
+        private const float CHANCE_FOR_LOOT = 1f / 6f;
+        private const float CHANCE_FOR_DOUBLE_LOOT = 0.2f;
+        private const float CHANCE_FOR_CHEST = 1f / 3f;
+        private const float CHANCE_FOR_TRAP = 1f / 10f;
+        private const int MIN_TRAP_DAMAGE = 2;
+        private const int MAX_TRAP_DAMAGE = 4;
 
         private Enemy enemy;
 
         public bool IsRoom { get; private set; }
-        public Location[] Neighbors;
+        public Location[] Neighbors { get; set; }
         public ItemList Items { get; set; }
         public Chest Chest { get; private set; }
+        public Trap Trap { get; private set; }
+        public bool IsTrapped
+        {
+            get
+            {
+                return Trap != null && Trap.IsActive;
+            }
+        }
         public Enemy Enemy
         {
             get
@@ -36,6 +47,7 @@ namespace Labyrinth
             Chest = null;
             Enemy = null;
             IsRoom = false;
+            Trap = null;
         }
 
         public Location(bool isRoom)
@@ -63,6 +75,11 @@ namespace Labyrinth
                 if (Utils.Roll(CHANCE_FOR_CHEST))
                 {
                     Chest = new Chest();
+                }
+
+                if (Utils.Roll(CHANCE_FOR_TRAP))
+                {
+                    Trap = new Trap(MIN_TRAP_DAMAGE, MAX_TRAP_DAMAGE);
                 }
             }
         }
