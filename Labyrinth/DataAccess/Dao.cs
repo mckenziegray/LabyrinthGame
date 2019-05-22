@@ -55,11 +55,14 @@ namespace Labyrinth
 
                 foreach (PropertyInfo prop in typeof(DataEntryType).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
                 {
-                    prop.SetValue(dataEntry, Convert.ChangeType(row[prop.Name], prop.PropertyType));
-
-                    if (prop.PropertyType is KeyType)
+                    if (table.Columns.Contains(prop.Name))
                     {
-                        data[(KeyType)prop.GetValue(dataEntry)] = dataEntry;
+                        prop.SetValue(dataEntry, prop.PropertyType.IsEnum ? Enum.Parse(prop.PropertyType, row[prop.Name].ToString()) : Convert.ChangeType(row[prop.Name], prop.PropertyType));
+
+                        if (prop.PropertyType == typeof(KeyType))
+                        {
+                            data[(KeyType)prop.GetValue(dataEntry)] = dataEntry;
+                        }
                     }
                 }
             }
