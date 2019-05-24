@@ -8,8 +8,9 @@ namespace Labyrinth
     {
         private const int MAZE_SIZE = 200;
         private const float CHANCE_FOR_ENEMY_SPAWN = 0.5f;
-        private const float CHANCE_TO_FLEE = 0.9f;
         private const float CHANCE_FOR_ENEMY_MOVE = 0.7f;
+        private const float CHANCE_FOR_MERCHANT = 0.1f;
+        private const float CHANCE_TO_FLEE = 0.9f;
 
         public static bool MinotaurIsAlive = true;
         public static bool DragonIsAlive = true;
@@ -80,14 +81,19 @@ namespace Labyrinth
                 Direction dir = (Direction)Enum.Parse(typeof(Direction), DirectionActions[dirChar]);
                 Location newLocation = Player.Move(dir);
 
-                // Spawn an enemy in the player's location
-                if (newLocation.Enemy == null && Utils.Roll(CHANCE_FOR_ENEMY_SPAWN))
+#region Initialize player's new location
+                if (Player.Location.Enemy == null && Utils.Roll(CHANCE_FOR_ENEMY_SPAWN))
                 {
-                    newLocation.Enemy = Enemy.RandomEnemy(Difficulty);
+                    Player.Location.Enemy = Enemy.RandomEnemy(Difficulty);
                 }
+                else if (Utils.Roll(CHANCE_FOR_MERCHANT))
+                {
+                    Player.Location.Merchant = new Merchant();
+                }
+#endregion
 
                 // Room is trapped
-                if (newLocation.IsTrapped)
+                if (Player.Location.IsTrapped)
                 {
                     DisplayMessage("You feel a plate sink under your foot.");
                     DisplayMessage("Flames erupt from the floor!");
@@ -124,7 +130,57 @@ namespace Labyrinth
                 {
                     BattleResult = null;
                 }
-#endregion
+                #endregion
+
+                #region Found a merchant
+                DisplayMessage("A cloaked figure appears before you.");
+                DisplayMessage(Player.Location.Merchant.Dialogue.Greeting);
+
+                if (Player.JunkValue > 0)
+                {
+                    DisplayMessage("You sell your unused items.");
+                    Player.SellJunk();
+                }
+
+                DisplayMessage(Player.Location.Merchant.Dialogue.IntroQuestion);
+                DisplayMessage(Player.Location.Merchant.Dialogue.Items);
+                DisplayMessage($"Gold: {Player.Items.CountOf(ItemType.Gold)}");
+
+                bool doneShopping = false;
+                do
+                {
+                    string itemStr = GetInput(Player.Location.Merchant.Items.Select(i => i.ItemType.ToString()).Concat(Enum.GetNames(typeof(MerchantAction))).ToArray());
+                    if (Enum.GetNames(typeof(ItemType)).Contains(itemStr))
+                    {
+                        Item itemToBuy = Player.Location.Merchant.Items[(ItemType)Enum.Parse(typeof(ItemType), itemStr)];
+                        if (Player.Items.CountOf(ItemType.Gold) >= itemToBuy.Value)
+                        {
+                            Player.SpendGold(itemToBuy.Value);
+                            Player.Items.Add(itemToBuy);
+                            Player.Location.Merchant.Sell(itemToBuy);
+                        }
+                        else
+                        {
+                            DisplayMessage("You don't have enough gold for that.");
+                        }
+                    }
+                    else
+                    {
+                        switch (Enum.Parse<MerchantAction>(itemStr))
+                        {
+                            case MerchantAction.Nothing:
+                                doneShopping = true;
+                                break;
+                            default:
+                                throw new NotSupportedException();
+                        }
+                    }
+                }
+                while (!doneShopping);
+
+                DisplayMessage(Player.Location.Merchant.Dialogue.PartingMessage);
+
+                #endregion
 
                 #region Found a chest
                 if (Player.Location.Chest != null)
@@ -193,6 +249,8 @@ namespace Labyrinth
                         }
                     }
                 }
+
+                Player.Location.Merchant = null;
             }
 
         }
@@ -402,7 +460,7 @@ namespace Labyrinth
         {
             char input;
 
-            if (validInputs == null || validInputs.Count() == 0)
+            if (validInputs == null || validInputs.Length == 0)
             {
                 input = Console.ReadKey().KeyChar;
             }
@@ -416,6 +474,26 @@ namespace Labyrinth
             }
 
             return input;
+        }
+
+        public string GetInput(params string[] validInputs)
+        {
+            string input;
+
+            if (validInputs == null || validInputs.Length == 0)
+            {
+                input = Console.ReadLine();
+            }
+            else
+            {
+                do
+                {
+                    input = Console.ReadLine().ToLower();
+                }
+                while (!validInputs.Select(i => i.ToLower()).Contains(input));
+            }
+
+            return validInputs.First(i => i.ToLower() == input);
         }
 
         /// <summary>

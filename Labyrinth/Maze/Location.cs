@@ -12,6 +12,7 @@ namespace Labyrinth
         private const int MAX_TRAP_DAMAGE = 4;
 
         private Enemy enemy;
+        private Merchant merchant;
 
         public bool IsRoom { get; private set; }
         public Location[] Neighbors { get; set; }
@@ -35,8 +36,24 @@ namespace Labyrinth
             {
                 enemy = value;
 
+                // Ensure the enemy's location is this
                 if (enemy != null && enemy.Location != this)
                     enemy.Location = this;
+            }
+        }
+        public Merchant Merchant
+        {
+            get
+            {
+                return merchant;
+            }
+            set
+            {
+                merchant = value;
+
+                // Ensure the merchant's location is this
+                if (merchant != null && merchant.Location != this)
+                    merchant.Location = this;
             }
         }
 

@@ -37,7 +37,7 @@ namespace Labyrinth
             {
                 if (!items.ContainsKey(key))
                 {
-                    throw new KeyNotFoundException();
+                    return null;
                 }
 
                 return items[key];
@@ -118,7 +118,7 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Decrements the count of the given item
+        /// Decrements the count of the given item and removes the item if there are none left.
         /// </summary>
         /// <param name="item">The item being consumed</param>
         /// <param name="amount">The number of items to consume</param>
@@ -128,14 +128,20 @@ namespace Labyrinth
             {
                 throw new KeyNotFoundException($"{this.GetType().Name} contains no {item}.");
             }
-            else if (!items[item].Stackable)
-            {
-                throw new NotSupportedException($"{item} is not consumable.");
-            }
             else
             {
-                this[item].Count -= amount;
+                items[item].Count -= amount;
             }
+
+            if (items[item].Count < 1)
+            {
+                items.Remove(item);
+            }
+        }
+
+        public int CountOf(ItemType item)
+        {
+            return Contains(item) ? items[item].Count : 0;
         }
 
         public IEnumerator<Item> GetEnumerator()

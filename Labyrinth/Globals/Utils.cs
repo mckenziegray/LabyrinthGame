@@ -79,5 +79,38 @@ namespace Labyrinth
 
             return article;
         }
+
+        /// <summary>
+        /// Returns a masculine or feminine pronoun.
+        /// </summary>
+        /// <param name="male">
+        /// True if the pronoun corresponds to a male. 
+        /// False if the pronoun corresponds to a female.
+        /// null if the pronoun should be random.</param>
+        /// <param name="capitalize">Whether the article should be capitalized</param>
+        /// <returns>He, She, he, or she</returns>
+        public static string HeOrShe(bool? male, bool capitalize)
+        {
+            male = male ?? Utils.Roll(0.5f);
+            string pronoun = male.Value ? "he" : "she";
+
+            return capitalize ? Capitalize(pronoun) : pronoun;
+        }
+
+        /// <summary>
+        /// Capitalizes the first letter of a string
+        /// </summary>
+        /// <returns>The capitalized string, or the original string if it couldn't be capitalized</returns>
+        public static string Capitalize(string word)
+        {
+            string capitalizedWord = word;
+
+            if (word != null && word.Length > 0)
+            {
+                capitalizedWord = word.First().ToString().ToUpper() + word.Substring(1);
+            }
+
+            return capitalizedWord;
+        }
     }
 }

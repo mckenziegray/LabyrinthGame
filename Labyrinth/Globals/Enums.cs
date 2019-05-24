@@ -16,6 +16,8 @@
 
     public enum BattleAction { Attack = 'A', Bow = 'B', Potion = 'P', Flee= 'F' }
 
+    public enum MerchantAction { Nothing }
+
     public enum AttackResult { Miss, Hit, Crit }
 
     public enum BattleResult { Won, Fled, Lost }

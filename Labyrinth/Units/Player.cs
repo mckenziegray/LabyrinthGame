@@ -242,5 +242,11 @@ namespace Labyrinth
 
             ItemGained?.Invoke(this, eventArgs);
         }
+
+        public void SellJunk()
+        {
+            if (JunkValue > 0)
+                Items.Add(new Item(ItemType.Gold, JunkValue));
+        }
     }
 }
