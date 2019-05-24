@@ -19,8 +19,7 @@ namespace Labyrinth
             set
             {
                 location = value;
-
-                // Ensure the enemy's location is set to this
+                
                 if (location.Enemy != this)
                     location.Enemy = this;
             }
@@ -48,7 +47,7 @@ namespace Labyrinth
             if (Utils.Roll(CHANCE_FOR_LOOT))
             {
                 Item loot = Item.RandomItem(Items);
-                Items[loot.ItemType] = loot;
+                Items.Add(loot);
             }
         }
 

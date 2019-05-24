@@ -1,47 +1,71 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Labyrinth
 {
-    /// <summary>
-    /// A specialized container designed to hold <see cref="Item"/>s
-    /// </summary>
-    class ItemList : Dictionary<ItemType, Item>
+    class ItemList : IEnumerable<Item>
     {
+        private Dictionary<ItemType, Item> items;
+
+        public bool IsReadOnly => false;
+        public int Count
+        {
+            get
+            {
+                return items.Count;
+            }
+        }
+
+        public ItemList()
+        {
+            items = new Dictionary<ItemType, Item>();
+        }
+
         /// <summary>
-        /// Adds an item to the dictionary if it does not already exist, or increases the count if the item does already exist
+        /// Gets the item of the given type
+        /// </summary>
+        /// <param name="key">The <see cref="ItemType"/> of the item to retrieve.</param>
+        /// <returns>The item of the corresponding type</returns>
+        public Item this[ItemType key]
+        {
+            get
+            {
+                if (!items.ContainsKey(key))
+                {
+                    throw new KeyNotFoundException();
+                }
+
+                return items[key];
+            }
+            private set
+            {
+                items[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Adds an item to the list if it does not already exist, or increases the count if the item does already exist
         /// </summary>
         /// <param name="item"></param>
         public void Add(Item item)
         {
-            if (this.ContainsKey(item.ItemType))
+            if (items.ContainsKey(item.ItemType))
             {
-                this[item.ItemType].Count += item.Count;
+                items[item.ItemType].Count += item.Count;
             }
             else
             {
-                this.Add(item.ItemType, item);
+                items.Add(item.ItemType, item);
             }
         }
 
         /// <summary>
-        /// Adds all items in the given dictionary
+        /// Adds all items in a collection to the list
         /// </summary>
         /// <param name="list">The items to add</param>
-        public void Add(Dictionary<ItemType, Item> list)
-        {
-            foreach (Item item in list.Values)
-            {
-                Add(item);
-            }
-        }
-
-        /// <summary>
-        /// Adds all items in the given list
-        /// </summary>
-        /// <param name="list">The items to add</param>
-        public void Add(IEnumerable<Item> list)
+        public void AddRange(IEnumerable<Item> list)
         {
             foreach (Item item in list)
             {
@@ -55,12 +79,12 @@ namespace Labyrinth
         /// <param name="item">The item to add</param>
         /// <param name="compareFunc">The function to use for comparing the items to determine which is better.</param>
         /// <returns>The item that was junked (if applicable)</returns>
-        public Item AddOrReplace(Item item, Func<Item, Item, bool> compareFunc)
+        public Item AddOrReplace(Item item, Func<Item, Item, bool> compareFunc = null)
         {
             Item itemNotKept = null;
 
             // Either the list doesn't contain the item, or the list can hold more
-            if (!this.ContainsKey(item.ItemType) || item.Stackable)
+            if (!items.ContainsKey(item.ItemType) || item.Stackable)
             {
                 Add(item);
             }
@@ -80,23 +104,43 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Determines if the item exists in the list
+        /// Returns true if there is at least one of the given item in the list
         /// </summary>
-        /// <param name="item">The type of item to check for</param>
-        /// <returns>True if the item exists in the list with a <see cref="Count"/> of at least 1</returns>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public bool Contains(ItemType item)
         {
-            return this.ContainsKey(item) && this[item] != null && this[item].Count > 0;
+            return items.ContainsKey(item) && items[item] != null && items[item].Count > 0;
         }
 
         /// <summary>
         /// Decrements the count of the given item
         /// </summary>
         /// <param name="item">The item being consumed</param>
-        public void UseItem(ItemType item)
+        public void Use(ItemType item)
         {
-            if (this.ContainsKey(item) && this[item] != null)
+            if (!Contains(item))
+            {
+                throw new KeyNotFoundException($"{this.GetType().Name} contains no {item}.");
+            }
+            else if (!items[item].Stackable)
+            {
+                throw new NotSupportedException($"{item} is not consumable.");
+            }
+            else
+            {
                 --this[item].Count;
+            }
+        }
+
+        public IEnumerator<Item> GetEnumerator()
+        {
+            return items.Values.Where(i => i?.Count > 0).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return items.Values.Where(i => i?.Count > 0).GetEnumerator();
         }
     }
 }

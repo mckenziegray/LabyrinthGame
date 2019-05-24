@@ -46,15 +46,15 @@ namespace Labyrinth
         {
             List<Tuple<string, int>> increasedStats = new List<Tuple<string, int>>();
 
-            int newPower = Level + (Items.ContainsKey(ItemType.Weapon) ? (Items[ItemType.Weapon] as Weapon).Damage : 0);
+            int newPower = Level + (Items.Contains(ItemType.Weapon) ? (Items[ItemType.Weapon] as Weapon).Damage : 0);
             if (newPower != Power)
             {
                 increasedStats.Add(new Tuple<string, int>(Stats.Power, newPower - Power));
                 Power = newPower;
             }
 
-            int newDefense = Level - 1 + (Items.ContainsKey(ItemType.Armor) ? (Items[ItemType.Armor] as Armor).Defense : 0) 
-                + (Items.ContainsKey(ItemType.Shield) ? (Items[ItemType.Shield] as Shield).Defense : 0);
+            int newDefense = Level - 1 + (Items.Contains(ItemType.Armor) ? (Items[ItemType.Armor] as Armor).Defense : 0) 
+                + (Items.Contains(ItemType.Shield) ? (Items[ItemType.Shield] as Shield).Defense : 0);
             if (newDefense != Defense)
             {
                 increasedStats.Add(new Tuple<string, int>(Stats.Defense, newDefense - Defense));
@@ -179,7 +179,7 @@ namespace Labyrinth
         /// <param name="items">The items to give to the player</param>
         public void GiveLoot(ItemList items)
         {
-            foreach (Item item in items.Values)
+            foreach (Item item in items)
             {
                 GiveItem(item);
             }

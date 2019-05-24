@@ -13,7 +13,7 @@ namespace Labyrinth
         public const float BOW_DAMAGE_MULTIPLIER = 1.5f;
         public const int POTION_HEAL_AMOUNT = 10;
 
-        private int MaxInitialCount;
+        private int maxInitialCount;
 
         public ItemType ItemType { get; private set; }
         public int Value { get; protected set; } //TODO: Set Value for all item types
@@ -33,10 +33,10 @@ namespace Labyrinth
             ItemType = type;
             Value = data.Value;
             Stackable = data.Stackable;
-            MaxInitialCount = data.MaxInitialCount;
+            maxInitialCount = data.MaxInitialCount;
 
             if (Stackable)
-                Count = Utils.Random.Next(1, MaxInitialCount);
+                Count = Utils.Random.Next(1, maxInitialCount);
             else
                 Count = 1;
         }
@@ -66,7 +66,7 @@ namespace Labyrinth
 
             foreach (ItemType itemType in Enum.GetValues(typeof(ItemType)))
             {
-                if (itemType == ItemType.Gold || (currentLoot?.Values.Any(i => i.ItemType == itemType) ?? false))
+                if (itemType == ItemType.Gold || (currentLoot?.Any(i => i.ItemType == itemType) ?? false))
                     continue;
 
                 chance += defaultChance;
