@@ -17,7 +17,7 @@ namespace Labyrinth
         {
             get
             {
-                return items.Count;
+                return items.Count(kvp => this.Contains(kvp.Key));
             }
         }
 
@@ -107,22 +107,24 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Returns true if there is at least one of the given item in the list
+        /// Returns true if the list contains the given item
         /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public bool Contains(ItemType item)
+        /// <param name="item">The type of item to check for</param>
+        /// <param name="amount">The number of items to consume; defaults to 1</param>
+        /// <returns>True if there are at least <paramref name="amount"/> of the given item in the list.</returns>
+        public bool Contains(ItemType item, int amount = 1)
         {
-            return items.ContainsKey(item) && items[item] != null && items[item].Count > 0;
+            return items.ContainsKey(item) && items[item] != null && items[item].Count >= amount;
         }
 
         /// <summary>
         /// Decrements the count of the given item
         /// </summary>
         /// <param name="item">The item being consumed</param>
-        public void Use(ItemType item)
+        /// <param name="amount">The number of items to consume</param>
+        public void Use(ItemType item, int amount = 1)
         {
-            if (!Contains(item))
+            if (!Contains(item, amount))
             {
                 throw new KeyNotFoundException($"{this.GetType().Name} contains no {item}.");
             }
@@ -132,7 +134,7 @@ namespace Labyrinth
             }
             else
             {
-                --this[item].Count;
+                this[item].Count -= amount;
             }
         }
 

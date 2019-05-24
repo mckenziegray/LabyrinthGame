@@ -174,30 +174,13 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Gives multiple items to the player
-        /// </summary>
-        /// <param name="items">The items to give to the player</param>
-        public void GiveLoot(ItemList items)
-        {
-            foreach (Item item in items)
-            {
-                GiveItem(item);
-            }
-        }
-
-        /// <summary>
         /// Causes the player to consume a potion, if they have one.
         /// Throws <see cref="Exception"/> if the player does not have any potions.
         /// </summary>
         /// <returns>The amount of <see cref="Unit.CurrentHP"/> restored from consuming the potion</returns>
         public int UsePotion()
         {
-            if (!Items.Contains(ItemType.Potions))
-            {
-                throw new Exception("The player doesn't have any potions.");
-            }
-
-            --Items[ItemType.Potions].Count;
+            Items.Use(ItemType.Potions);
             return Heal(Item.POTION_HEAL_AMOUNT);
         }
 
@@ -208,15 +191,19 @@ namespace Labyrinth
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
         public Tuple<AttackResult, int> UseArrow()
         {
-            if (!Items.Contains(ItemType.Arrows))
-            {
-                throw new Exception("The player doesn't have any arrows."); 
-            }
-
-            --Items[ItemType.Arrows].Count;
+            Items.Use(ItemType.Arrows);
 
             Tuple<AttackResult, int> result = RollDamage();
             return new Tuple<AttackResult, int>(result.Item1, (int)(result.Item2 * Item.BOW_DAMAGE_MULTIPLIER));
+        }
+
+        /// <summary>
+        /// Causes the player to use the given amount of gold
+        /// </summary>
+        /// <param name="amount">The amount of gold to spend</param>
+        public void SpendGold(int amount)
+        {
+            Items.Use(ItemType.Gold, amount);
         }
 
         /// <summary>
