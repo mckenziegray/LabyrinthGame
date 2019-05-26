@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Labyrinth
 {
-    class Shield : Item
+    public class Shield : Item
     {
         public const float CHANCE_FOR_KITE = 0.25f;
 

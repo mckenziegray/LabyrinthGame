@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Labyrinth
 {
-    class Trap
+    public class Trap
     {
         private int MinDamage;
         private int MaxDamage;

@@ -3,13 +3,11 @@ using System.Collections.Generic;
 
 namespace Labyrinth
 {
-    class Unit
+    public class Unit
     {
         protected const float CHANCE_FOR_CRIT = 0.1f;
         protected const float CHANCE_FOR_MISS = 0.1f;
         protected const int CRIT_MULTIPLIER = 3;
-
-        private Location location;
 
         public int MaxHP { get; protected set; }
         public int CurrentHP { get; protected set; }

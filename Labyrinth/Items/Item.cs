@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Labyrinth
 {
-    class Item
+    public class Item
     {
         private static readonly int NUM_ITEMS = Enum.GetNames(typeof(ItemType)).Length;
         private const float CHANCE_FOR_GOLD = 0.4f;

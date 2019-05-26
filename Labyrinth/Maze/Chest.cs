@@ -2,7 +2,7 @@
 
 namespace Labyrinth
 {
-    class Chest
+    public class Chest
     {
         private const float CHANCE_FOR_DOUBLE_LOOT = 0.2f;
         private const float CHANCE_FOR_TRAP = 0.5f;

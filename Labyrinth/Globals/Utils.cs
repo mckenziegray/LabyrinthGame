@@ -7,7 +7,7 @@ namespace Labyrinth
     /// <summary>
     /// Contains various utility methods used throughout the project
     /// </summary>
-    class Utils
+    public class Utils
     {
         public static Random Random = new Random();
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Labyrinth
 {
-    class Player : Unit
+    public class Player : Unit
     {
         private const int STARTING_HP = 10;
         private const int STARTING_POWER = 1;

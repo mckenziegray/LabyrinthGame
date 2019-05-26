@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Labyrinth
 {
-    class Weapon : Item
+    public class Weapon : Item
     {
         private const float CHANCE_FOR_AXE = 1.0f / 6.0f;
         private const float CHANCE_FOR_SWORD = 1.0f / 3.0f;

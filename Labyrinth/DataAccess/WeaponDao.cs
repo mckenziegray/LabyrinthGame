@@ -16,7 +16,7 @@ namespace Labyrinth
     /// <summary>
     /// Provides access to the Item table in the database
     /// </summary>
-    static class WeaponDao
+    public static class WeaponDao
     {
         private static DataTable m_table;
         private static Dictionary<WeaponType, WeaponDataEntry> m_dataEntries;

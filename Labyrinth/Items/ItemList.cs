@@ -8,7 +8,7 @@ namespace Labyrinth
     /// <summary>
     /// A specialized container designed to hold <see cref="Item"/>
     /// </summary>
-    class ItemList : IEnumerable<Item>
+    public class ItemList : IEnumerable<Item>
     {
         private Dictionary<ItemType, Item> items;
 

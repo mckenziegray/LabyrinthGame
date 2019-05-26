@@ -2,7 +2,7 @@
 
 namespace Labyrinth
 {
-    class Maze
+    public class Maze
     {
         private const float CHANCE_FOR_ROOM = 1.0f / 3.0f;
 

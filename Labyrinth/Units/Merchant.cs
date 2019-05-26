@@ -14,7 +14,7 @@ namespace Labyrinth
         public string PartingMessage;
     }
 
-    class Merchant : Unit
+    public class Merchant : Unit
     {
         private const int MIN_ITEMS = 3;
         private const int MAX_ITEMS = 7;

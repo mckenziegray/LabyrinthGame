@@ -22,7 +22,7 @@ namespace Labyrinth
     /// <summary>
     /// Provides access to the Enemy table in the database
     /// </summary>
-    static class EnemyDao
+    public static class EnemyDao
     {
         private static DataTable m_table;
         private static Dictionary<EnemyType, EnemyDataEntry> m_dataEntries;

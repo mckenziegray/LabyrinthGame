@@ -3,7 +3,7 @@ using System.Data;
 
 namespace Labyrinth
 {
-    class Enemy : Unit
+    public class Enemy : Unit
     {
         public const float CHANCE_TO_DODGE = 0.1f;
         private const float CHANCE_FOR_LOOT = 0.2f;

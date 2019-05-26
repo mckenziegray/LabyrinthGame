@@ -16,7 +16,7 @@ namespace Labyrinth
     /// <summary>
     /// Provides access to the Shield table in the database
     /// </summary>
-    static class ShieldDao
+    public static class ShieldDao
     {
         private static DataTable m_table;
         private static Dictionary<ShieldType, ShieldDataEntry> m_dataEntries;

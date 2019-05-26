@@ -16,7 +16,7 @@ namespace Labyrinth
     /// <summary>
     /// Provides access to the Armor table in the database
     /// </summary>
-    static class ArmorDao
+    public static class ArmorDao
     {
         private static DataTable m_table;
         private static Dictionary<ArmorType, ArmorDataEntry> m_dataEntries;

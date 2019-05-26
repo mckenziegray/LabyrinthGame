@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Labyrinth
 {
-    class Game
+    public class Game
     {
         private const int MAZE_SIZE = 200;
         private const float CHANCE_FOR_ENEMY_SPAWN = 0.5f;

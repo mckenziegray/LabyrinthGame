@@ -9,7 +9,7 @@ namespace Labyrinth
     /// <summary>
     /// Provides access to the database
     /// </summary>
-    static class Dao : object
+    public static class Dao : object
     {
         public const string DB = "Labyrinth";
         public const string SCHEMA = "dbo";

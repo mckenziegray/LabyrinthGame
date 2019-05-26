@@ -7,7 +7,7 @@ namespace Labyrinth
     /// <summary>
     /// <see cref="EventArgs"/> for the <see cref="Player.StatsIncreased"/> event
     /// </summary>
-    class StatsIncreasedEventArgs : EventArgs
+    public class StatsIncreasedEventArgs : EventArgs
     {
         public List<Tuple<string, int>> StatsIncreased;
     }

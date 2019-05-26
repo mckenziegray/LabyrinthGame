@@ -2,7 +2,7 @@
 
 namespace Labyrinth
 {
-    class Location
+    public class Location
     {
         private const float CHANCE_FOR_LOOT = 1f / 6f;
         private const float CHANCE_FOR_DOUBLE_LOOT = 0.2f;
