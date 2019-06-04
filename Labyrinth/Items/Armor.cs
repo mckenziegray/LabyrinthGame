@@ -50,5 +50,21 @@ namespace Labyrinth
 
             return new Armor(type);
         }
+        
+        public override bool CompareTo(Item other)
+        {
+            bool result;
+
+            if (other is Armor)
+            {
+                result = Defense > (other as Armor).Defense;
+            }
+            else
+            {
+                result = base.CompareTo(other);
+            }
+
+            return result;
+        }
     }
 }

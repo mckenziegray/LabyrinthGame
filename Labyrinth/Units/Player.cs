@@ -42,7 +42,7 @@ namespace Labyrinth
         /// Updates the player's stats according to the current <see cref="Level"/> and <see cref="Unit.Items"/>
         /// </summary>
         /// <returns>A list of tuples representing the stats that increased</returns>
-        public List<Tuple<string, int>> UpdateStats()
+        private List<Tuple<string, int>> UpdateStats()
         {
             List<Tuple<string, int>> increasedStats = new List<Tuple<string, int>>();
 
@@ -140,21 +140,21 @@ namespace Labyrinth
             switch (item.ItemType)
             {
                 case ItemType.Weapon:
-                    AddOrReplaceItem(item, (n, o) => (n as Weapon).Damage > (o as Weapon).Damage);
+                    AddOrReplaceItem(item);
                     break;
                 case ItemType.Armor:
-                    AddOrReplaceItem(item, (n, o) => (n as Armor).Defense > (o as Armor).Defense);
+                    AddOrReplaceItem(item);
                     break;
                 case ItemType.Shield:
-                    AddOrReplaceItem(item, (n, o) => (n as Shield).Defense > (o as Shield).Defense);
+                    AddOrReplaceItem(item);
                     break;
                 case ItemType.Bow:
-                    AddOrReplaceItem(item, (_, o) => o != null);
+                    AddOrReplaceItem(item);
                     break;
                 case ItemType.Arrows:
                 case ItemType.Potions:
                 case ItemType.Gold:
-                    AddOrReplaceItem(item, null);
+                    AddOrReplaceItem(item);
                     break;
                 default:
                     throw new ArgumentException($"Unknown item of type {item.ItemType}");
@@ -227,9 +227,9 @@ namespace Labyrinth
         /// <param name="newItem">The item to give the player</param>
         /// <param name="compareFunc">The function for comparing the new item to the existing one</param>
         /// <param name="firstItem">Whether this is the first item in a group that the player is receiving</param>
-        private void AddOrReplaceItem(Item newItem, Func<Item, Item, bool> compareFunc, bool firstItem = true)
+        private void AddOrReplaceItem(Item newItem, bool firstItem = true)
         {
-            Item junkedItem = Items.AddOrReplace(newItem, compareFunc);
+            Item junkedItem = Items.AddOrReplace(newItem);
 
             if (junkedItem != null)
                 JunkValue += junkedItem.Value;

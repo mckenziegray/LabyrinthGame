@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -57,7 +58,7 @@ namespace Labyrinth
         /// </summary>
         /// <param name="currentLoot">The list of items to which the random item will be added - this will affect the item that is returned</param>
         /// <returns>A random item that is not contained in the given item list, or gold</returns>
-        public static Item RandomItem(ItemList currentLoot)
+        public static Item RandomItem(IEnumerable<Item> currentLoot)
         {
             float roll = Utils.GetRandomPercent();
 
@@ -87,6 +88,16 @@ namespace Labyrinth
             }
 
             return new Item(ItemType.Gold);
+        }
+
+        /// <summary>
+        /// Compares the quality of two items.
+        /// </summary>
+        /// <param name="other">The item to compare to.</param>
+        /// <returns>Returns true if this is better; returns false if other is better.</returns>
+        public virtual bool CompareTo(Item other)
+        {
+            return Value > other.Value;
         }
     }
 }

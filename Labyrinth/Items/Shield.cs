@@ -44,5 +44,21 @@ namespace Labyrinth
 
             return new Shield(type);
         }
+
+        public override bool CompareTo(Item other)
+        {
+            bool result;
+
+            if (other is Shield)
+            {
+                result = Defense > (other as Shield).Defense;
+            }
+            else
+            {
+                result = base.CompareTo(other);
+            }
+
+            return result;
+        }
     }
 }

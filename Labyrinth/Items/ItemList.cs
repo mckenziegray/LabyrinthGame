@@ -82,7 +82,7 @@ namespace Labyrinth
         /// <param name="item">The item to add</param>
         /// <param name="compareFunc">The function to use for comparing the items to determine which is better.</param>
         /// <returns>The item that was junked (if applicable)</returns>
-        public Item AddOrReplace(Item item, Func<Item, Item, bool> compareFunc = null)
+        public Item AddOrReplace(Item item)
         {
             Item itemNotKept = null;
 
@@ -92,7 +92,7 @@ namespace Labyrinth
                 Add(item);
             }
             // The new item is better than the current one; replace it
-            else if (compareFunc != null && compareFunc(item, this[item.ItemType]))
+            else if (item.CompareTo(this[item.ItemType]))
             {
                 itemNotKept = this[item.ItemType];
                 this[item.ItemType] = item;

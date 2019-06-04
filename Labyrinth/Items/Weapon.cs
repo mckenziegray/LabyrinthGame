@@ -49,5 +49,21 @@ namespace Labyrinth
 
             return new Weapon(type);
         }
+
+        public override bool CompareTo(Item other)
+        {
+            bool result;
+
+            if (other is Weapon)
+            {
+                result = Damage > (other as Weapon).Damage;
+            }
+            else
+            {
+                result = base.CompareTo(other);
+            }
+
+            return result;
+        }
     }
 }
