@@ -7,7 +7,7 @@ namespace Labyrinth
     {
         protected const float CHANCE_FOR_CRIT = 0.1f;
         protected const float CHANCE_FOR_MISS = 0.1f;
-        protected const int CRIT_MULTIPLIER = 3;
+        public const int CRIT_MULTIPLIER = 3;
 
         public int MaxHP { get; protected set; }
         public int CurrentHP { get; protected set; }

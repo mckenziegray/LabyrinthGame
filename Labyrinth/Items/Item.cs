@@ -58,7 +58,7 @@ namespace Labyrinth
         /// </summary>
         /// <param name="currentLoot">The list of items to which the random item will be added - this will affect the item that is returned</param>
         /// <returns>A random item that is not contained in the given item list, or gold</returns>
-        public static Item RandomItem(IEnumerable<Item> currentLoot)
+        public static Item RandomItem(IEnumerable<Item> currentLoot = null)
         {
             float roll = Utils.GetRandomPercent();
 

@@ -9,7 +9,7 @@ namespace Labyrinth
         private const int STARTING_HP = 10;
         private const int STARTING_POWER = 1;
         private const int STARTING_DEFENSE = 1;
-        private readonly int[] XP_TO_LEVEL_UP =
+        public readonly int[] XP_TO_LEVEL_UP =
         {
             50,     // XP for level 2
             150,
@@ -175,7 +175,7 @@ namespace Labyrinth
 
         /// <summary>
         /// Causes the player to consume a potion, if they have one.
-        /// Throws <see cref="Exception"/> if the player does not have any potions.
+        /// Throws <see cref="KeyNotFoundException"/> if the player does not have any potions.
         /// </summary>
         /// <returns>The amount of <see cref="Unit.CurrentHP"/> restored from consuming the potion</returns>
         public int UsePotion()
@@ -186,7 +186,7 @@ namespace Labyrinth
 
         /// <summary>
         /// Causes the player to use an arrow.
-        /// Throws an <see cref="Exception"/> if the player does not have any arrows
+        /// Throws an <see cref="KeyNotFoundException"/> if the player does not have any arrows
         /// </summary>
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
         public Tuple<AttackResult, int> UseArrow()
@@ -207,12 +207,16 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Causes the player to attack the given <see cref="Unit"/>
+        /// Causes the player to attack the given <see cref="Unit"/> using a bow
+        /// Throws an <see cref="KeyNotFoundException"/> if the player does not have a bow or arrows
         /// </summary>
         /// <param name="other">The <see cref="Unit"/> to attack</param>
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
         public Tuple<AttackResult, int> AttackWithBow(Unit other)
         {
+            if (!Items.Contains(ItemType.Bow))
+                throw new KeyNotFoundException($"The player does not have a {ItemType.Bow}.");
+
             Tuple<AttackResult, int> attackResult = UseArrow();
             other.Damage(attackResult.Item2 - other.Defense);
 

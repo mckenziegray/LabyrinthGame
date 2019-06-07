@@ -7,15 +7,12 @@ namespace LabyrinthTest
     [TestClass]
     public class UnitTest
     {
-        private Random random = new Random();
-        private int maxValue = 10000; // NOTE: Don't use int.MaxValue
-
         [TestMethod]
         public void ConstructorTest()
         {
-            int hp = random.Next();
-            int power = random.Next();
-            int defense = random.Next();
+            int hp = Utils.Random.Next();
+            int power = Utils.Random.Next();
+            int defense = Utils.Random.Next();
             Unit unit = new Unit(hp, power, defense);
 
             Assert.AreEqual(hp, unit.MaxHP);
@@ -27,10 +24,10 @@ namespace LabyrinthTest
         [TestMethod]
         public void DamageHealTest()
         {
-            int maxHp = random.Next(3, maxValue - 1);
-            int highAmt = random.Next(maxHp + 1, maxValue);
-            int lowDmg = random.Next(2, maxHp - 1);
-            int lowHeal = random.Next(1, lowDmg - 1);
+            int maxHp = Utils.Random.Next(3, TestUtils.MAX_VALUE - 1);
+            int highAmt = Utils.Random.Next(maxHp + 1, TestUtils.MAX_VALUE);
+            int lowDmg = Utils.Random.Next(2, maxHp - 1);
+            int lowHeal = Utils.Random.Next(1, lowDmg - 1);
             Unit unit = new Unit(maxHp, 0, 0);
 
             unit.Damage(lowDmg);
@@ -49,12 +46,12 @@ namespace LabyrinthTest
         [TestMethod]
         public void AttackTest()
         {
-            int defense = random.Next(0, maxValue);
-            int power = Math.Clamp(random.Next(defense + 1, maxValue), 1, maxValue);
+            int defense = Utils.Random.Next(0, TestUtils.MAX_VALUE);
+            int power = Math.Clamp(Utils.Random.Next(defense + 1, TestUtils.MAX_VALUE), 1, TestUtils.MAX_VALUE);
             int damage = power - defense;
-            int remainingHp = random.Next(1, maxValue);
+            int remainingHp = Utils.Random.Next(1, TestUtils.MAX_VALUE);
             int highHp = damage + remainingHp;
-            int lowHp = random.Next(1, damage);
+            int lowHp = Utils.Random.Next(1, damage);
             
             Unit attackingUnit = new Unit(1, power, 0);
             Unit weakenedUnit = new Unit(highHp, 0, defense);
@@ -72,11 +69,13 @@ namespace LabyrinthTest
         {
             Location startLoc = new Location();
             Location neighborLoc = new Location();
-            int dir = random.Next(Enum.GetValues(typeof(Direction)).Length);
+            int dir = Utils.Random.Next(Enum.GetValues(typeof(Direction)).Length);
             startLoc.Neighbors[dir] = neighborLoc;
 
-            Unit unit = new Unit();
-            unit.Location = startLoc;
+            Unit unit = new Unit
+            {
+                Location = startLoc
+            };
             Assert.AreEqual(startLoc, unit.Location);
 
             unit.Move((Direction)dir);

@@ -26,6 +26,11 @@ namespace Labyrinth
             items = new Dictionary<ItemType, Item>();
         }
 
+        public ItemList(IEnumerable<Item> items)
+        {
+            this.items = new Dictionary<ItemType, Item>(items.Select(i => new KeyValuePair<ItemType, Item>(i.ItemType, i)));
+        }
+
         /// <summary>
         /// Gets the item of the given type
         /// </summary>
@@ -126,7 +131,7 @@ namespace Labyrinth
         {
             if (!Contains(item, amount))
             {
-                throw new KeyNotFoundException($"{this.GetType().Name} contains no {item}.");
+                throw new KeyNotFoundException($"{this.GetType().Name} does not contain enough {item}.");
             }
             else
             {
@@ -139,6 +144,24 @@ namespace Labyrinth
             }
         }
 
+        /// <summary>
+        /// Generates a random <see cref="ItemList"/> using <see cref="Item.RandomItem(IEnumerable{Item})"/>
+        /// </summary>
+        /// <param name="numRolls">The number of times to add a random item to the list.</param>
+        /// <returns>An <see cref="ItemList"/> containing random items.</returns>
+        /// <remarks>The size of the generated list will not necessarily be equal to <paramref name="numRolls"/>.</remarks>
+        public static ItemList RandomLoot(int numRolls)
+        {
+            ItemList loot = new ItemList();
+
+            for (int i = 0; i < numRolls; i++)
+            {
+                loot.Add(Item.RandomItem(loot));
+            }
+
+            return loot;
+        }
+
         public int CountOf(ItemType item)
         {
             return Contains(item) ? items[item].Count : 0;
@@ -146,12 +169,12 @@ namespace Labyrinth
 
         public IEnumerator<Item> GetEnumerator()
         {
-            return items.Values.Where(i => i?.Count > 0).GetEnumerator();
+            return items.Values.Where(i => i.Count > 0).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return items.Values.Where(i => i?.Count > 0).GetEnumerator();
+            return items.Values.Where(i => i.Count > 0).GetEnumerator();
         }
     }
 }
