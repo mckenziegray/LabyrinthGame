@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Smo;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
 
@@ -14,16 +16,14 @@ namespace Labyrinth
     {
         public const string DB = "Labyrinth";
         public const string SCHEMA = "dbo";
-        public const string CONN_STRING = "Server=localhost;Database=master;Trusted_Connection=True;";
+        public const string CONN_STRING = "Server=(localdb)\\mssqllocaldb;Database=master;Trusted_Connection=True;";
 
         public static void InitializeDatabase()
         {
             using (SqlConnection connection = new SqlConnection(CONN_STRING))
             {
-                connection.Open();
-                SqlCommand command = new SqlCommand(File.ReadAllText($"DataAccess/InitializeDatabase.sql"), connection);
-                command.ExecuteNonQuery();
-                connection.Close();
+                Server server = new Server(new ServerConnection(connection));
+                server.ConnectionContext.ExecuteNonQuery(File.ReadAllText($"DataAccess/InitializeDatabase.sql"));
             }
         }
 
