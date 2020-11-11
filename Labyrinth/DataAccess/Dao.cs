@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Reflection;
 
 namespace Labyrinth
@@ -14,6 +15,17 @@ namespace Labyrinth
         public const string DB = "Labyrinth";
         public const string SCHEMA = "dbo";
         public const string CONN_STRING = "Server=localhost;Database=master;Trusted_Connection=True;";
+
+        public static void InitializeDatabase()
+        {
+            using (SqlConnection connection = new SqlConnection(CONN_STRING))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(File.ReadAllText($"DataAccess/InitializeDatabase.sql"), connection);
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }
 
         /// <summary>
         /// Retrieves a table from the database

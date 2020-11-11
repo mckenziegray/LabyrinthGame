@@ -10,6 +10,8 @@ namespace Labyrinth
 
         static void Main(string[] args)
         {
+            Dao.InitializeDatabase();
+
             Game game = new Game(STARTING_DIFFICULTY);
             game.Start();
         }
