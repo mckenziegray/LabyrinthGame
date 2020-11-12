@@ -9,7 +9,7 @@ namespace Labyrinth
     /// </summary>
     public class Utils
     {
-        public static Random Random = new Random();
+        public static Random Random { get; set; } = new Random();
 
         /// <summary>
         /// Creates a 2D array filled with a given value
@@ -91,7 +91,7 @@ namespace Labyrinth
         /// <returns>He, She, he, or she</returns>
         public static string HeOrShe(bool? male, bool capitalize)
         {
-            male = male ?? Utils.Roll(0.5f);
+            male ??= Roll(0.5f); // Cool operator... returns the left-hand operand if it's not null, else returns the right-hand operand
             string pronoun = male.Value ? "he" : "she";
 
             return capitalize ? Capitalize(pronoun) : pronoun;
@@ -107,7 +107,7 @@ namespace Labyrinth
 
             if (word != null && word.Length > 0)
             {
-                capitalizedWord = word.First().ToString().ToUpper() + word.Substring(1);
+                capitalizedWord = word.First().ToString().ToUpper() + word[1..];
             }
 
             return capitalizedWord;

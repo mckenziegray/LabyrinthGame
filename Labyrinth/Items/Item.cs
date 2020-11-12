@@ -9,17 +9,24 @@ namespace Labyrinth
     {
         private static readonly int NUM_ITEMS = Enum.GetNames(typeof(ItemType)).Length;
         private const float CHANCE_FOR_GOLD = 0.4f;
-        private const int MAX_INITIAL_GOLD = 5;
+        private const int MAX_INITIAL_GOLD = 5; // TODO: Should the player to start with any gold/arrows/potions?
         private const int MAX_INITIAL_ARROWS = 3;
         public const float BOW_DAMAGE_MULTIPLIER = 1.5f;
         public const int POTION_HEAL_AMOUNT = 10;
 
-        private int maxInitialCount;
+        private readonly int _maxInitialCount;
 
         public ItemType ItemType { get; private set; }
-        public int Value { get; protected set; } //TODO: Set Value for all item types
-        public bool Stackable;
-        public int Count;
+        public int Value { get; protected set; }
+        public bool Stackable { get; set; }
+        public int Count { get; set; }
+        public string Name => this switch
+        {
+            Weapon => $"{((Weapon)this).WeaponType} {ItemType}",
+            Armor => $"{((Armor)this).ArmorType} {ItemType}",
+            Shield => $"{((Shield)this).ShieldType} {ItemType}",
+            _ => ItemType.ToString()
+        };
 
         public Item() { }
 
@@ -34,10 +41,10 @@ namespace Labyrinth
             ItemType = type;
             Value = data.Value;
             Stackable = data.Stackable;
-            maxInitialCount = data.MaxInitialCount;
+            _maxInitialCount = data.MaxInitialCount;
 
             if (Stackable)
-                Count = Utils.Random.Next(1, maxInitialCount);
+                Count = Utils.Random.Next(1, _maxInitialCount);
             else
                 Count = 1;
         }
@@ -73,17 +80,13 @@ namespace Labyrinth
                 chance += defaultChance;
                 if (roll < chance)
                 {
-                    switch(itemType)
+                    return itemType switch
                     {
-                        case ItemType.Weapon:
-                            return Weapon.RandomWeapon();
-                        case ItemType.Armor:
-                            return Armor.RandomArmor();
-                        case ItemType.Shield:
-                            return Shield.RandomShield();
-                        default:
-                            return new Item(itemType);
-                    }
+                        ItemType.Weapon => Weapon.RandomWeapon(),
+                        ItemType.Armor => Armor.RandomArmor(),
+                        ItemType.Shield => Shield.RandomShield(),
+                        _ => new Item(itemType)
+                    };
                 }
             }
 

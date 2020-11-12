@@ -14,6 +14,8 @@ namespace Labyrinth
 
             Game game = new Game(STARTING_DIFFICULTY);
             game.Start();
+
+            Environment.Exit(0);
         }
     }
 }

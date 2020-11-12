@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Labyrinth
 {
@@ -12,34 +13,39 @@ namespace Labyrinth
         private const float CHANCE_FOR_MERCHANT = 0.1f;
         private const float CHANCE_TO_FLEE = 0.9f;
 
-        public static bool MinotaurIsAlive = true;
-        public static bool DragonIsAlive = true;
+        public static bool MinotaurIsAlive { get; set; } = true;
+        public static bool DragonIsAlive { get; set; } = true;
 
         private Maze Maze;
         private Player Player;
-        private int StartingDifficulty;
+        private readonly int StartingDifficulty;
         private int Difficulty;
         private int MovesTaken;
         private BattleResult? BattleResult;
-        private Dictionary<char, string> DirectionActions = new Dictionary<char, string>
+        private readonly Dictionary<char, string> DirectionActions = new Dictionary<char, string>
         {
             { 'N', Direction.North.ToString() },
             { 'E', Direction.East.ToString() },
             { 'S', Direction.South.ToString() },
             { 'W', Direction.West.ToString() }
         };
-        private Dictionary<char, string> ChestActions = new Dictionary<char, string>
+        private readonly Dictionary<char, string> ChestActions = new Dictionary<char, string>
         {
             { (char)ChestAction.Open, "Open the chest" },
             { (char)ChestAction.Leave, "Don't open the chest" },
             { (char)ChestAction.Examine, "Examine the chest" }
         };
-        public static Dictionary<char, string> BattleActions = new Dictionary<char, string>
+        public readonly static Dictionary<char, string> BattleActions = new Dictionary<char, string>
         {
             { (char)BattleAction.Attack, "Normal attack" },
             { (char)BattleAction.Bow, "Bow attack" },
             { (char)BattleAction.Potion, "Use potion" },
             { (char)BattleAction.Flee, "Attempt to flee" }
+        };
+        public readonly static Dictionary<char, string> YesNoActions = new Dictionary<char, string>
+        {
+            { (char)YesNoAction.Yes, "Yes" },
+            { (char)YesNoAction.No, "No" }
         };
 
         /// <summary>
@@ -48,14 +54,8 @@ namespace Labyrinth
         /// <param name="startingDifficulty">The starting difficulty of the game</param>
         public Game(int startingDifficulty)
         {
-            Maze = new Maze(MAZE_SIZE);
-            Player = new Player();
             StartingDifficulty = startingDifficulty;
-            Difficulty = startingDifficulty;
-            MovesTaken = 0;
-
-            Player.ItemGained += new EventHandler<ItemGainedEventArgs>(OnItemGained);
-            Player.StatsIncreased += new EventHandler<StatsIncreasedEventArgs>(OnStatsIncreased);
+            Reset();
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Labyrinth
                 Direction dir = (Direction)Enum.Parse(typeof(Direction), DirectionActions[dirChar]);
                 Location newLocation = Player.Move(dir);
 
-#region Initialize player's new location
+                #region Initialize player's new location
                 if (Player.Location.Enemy == null && Utils.Roll(CHANCE_FOR_ENEMY_SPAWN))
                 {
                     Player.Location.Enemy = Enemy.RandomEnemy(Difficulty);
@@ -90,9 +90,9 @@ namespace Labyrinth
                 {
                     Player.Location.Merchant = new Merchant();
                 }
-#endregion
+                #endregion
 
-                // Room is trapped
+                #region Room is trapped
                 if (Player.Location.IsTrapped)
                 {
                     DisplayMessage("You feel a plate sink under your foot.");
@@ -101,6 +101,7 @@ namespace Labyrinth
                     Player.Damage(trapDamage);
                     DisplayMessage($"You take {trapDamage} points of damage.");
                 }
+                #endregion
 
                 #region Found an enemy
                 if (Player.Location.Enemy != null)
@@ -133,53 +134,55 @@ namespace Labyrinth
                 #endregion
 
                 #region Found a merchant
-                DisplayMessage("A cloaked figure appears before you.");
-                DisplayMessage(Player.Location.Merchant.Dialogue.Greeting);
-
-                if (Player.JunkValue > 0)
+                if (Player.Location.Merchant != null)
                 {
-                    DisplayMessage("You sell your unused items.");
-                    Player.SellJunk();
-                }
+                    DisplayMessage("A cloaked figure appears before you.");
+                    DisplayMessage(Player.Location.Merchant.Dialogue.Greeting);
 
-                DisplayMessage(Player.Location.Merchant.Dialogue.IntroQuestion);
-                DisplayMessage(Player.Location.Merchant.Dialogue.Items);
-                DisplayMessage($"Gold: {Player.Items.CountOf(ItemType.Gold)}");
-
-                bool doneShopping = false;
-                do
-                {
-                    string itemStr = GetInput(Player.Location.Merchant.Items.Select(i => i.ItemType.ToString()).Concat(Enum.GetNames(typeof(MerchantAction))).ToArray());
-                    if (Enum.GetNames(typeof(ItemType)).Contains(itemStr))
+                    if (Player.JunkValue > 0)
                     {
-                        Item itemToBuy = Player.Location.Merchant.Items[(ItemType)Enum.Parse(typeof(ItemType), itemStr)];
-                        if (Player.Items.CountOf(ItemType.Gold) >= itemToBuy.Value)
+                        Player.SellJunk();
+                        DisplayMessage("You sell your unused items.");
+                    }
+
+                    DisplayMessage(Player.Location.Merchant.Dialogue.IntroQuestion);
+
+                    bool doneShopping = false;
+                    do
+                    {
+                        DisplayMessage(Player.Location.Merchant.Dialogue.Items);
+                        DisplayMessage($"Gold: {Player.Items.CountOf(ItemType.Gold)}");
+
+                        string itemStr = GetInput(Player.Location.Merchant.Items.Select(i => i.Name).Concat(Enum.GetNames(typeof(MerchantAction))).ToArray());
+                        if (Enum.GetNames(typeof(ItemType)).Contains(itemStr))
                         {
-                            Player.SpendGold(itemToBuy.Value);
-                            Player.Items.Add(itemToBuy);
-                            Player.Location.Merchant.Sell(itemToBuy);
+                            Item itemToBuy = Player.Location.Merchant.Items[(ItemType)Enum.Parse(typeof(ItemType), itemStr)];
+                            if (Player.Items.CountOf(ItemType.Gold) >= itemToBuy.Value)
+                            {
+                                Player.SpendGold(itemToBuy.Value);
+                                Player.Items.Add(itemToBuy);
+                                Player.Location.Merchant.Sell(itemToBuy);
+
+                                DisplayMessage(Player.Location.Merchant.Dialogue.RepeatQuestion);
+                            }
+                            else
+                            {
+                                DisplayMessage("You don't have enough gold for that.");
+                            }
                         }
                         else
                         {
-                            DisplayMessage("You don't have enough gold for that.");
+                            doneShopping = (Enum.Parse<MerchantAction>(itemStr)) switch
+                            {
+                                MerchantAction.Nothing => true,
+                                _ => throw new NotSupportedException(),
+                            };
                         }
                     }
-                    else
-                    {
-                        switch (Enum.Parse<MerchantAction>(itemStr))
-                        {
-                            case MerchantAction.Nothing:
-                                doneShopping = true;
-                                break;
-                            default:
-                                throw new NotSupportedException();
-                        }
-                    }
+                    while (!doneShopping);
+
+                    DisplayMessage(Player.Location.Merchant.Dialogue.PartingMessage);
                 }
-                while (!doneShopping);
-
-                DisplayMessage(Player.Location.Merchant.Dialogue.PartingMessage);
-
                 #endregion
 
                 #region Found a chest
@@ -228,24 +231,26 @@ namespace Labyrinth
                 }
                 #endregion
 
+                #region Found an item
                 if (Player.Location.Items.Any())
                 {
                     DisplayMessage("There's something on the floor.");
                     Player.GiveLoot(Player.Location.Items);
                 }
+                #endregion
 
                 MovesTaken++;
 
                 UpdateDifficulty();
                 
-                // Meve enemies
+                // Move enemies
                 if (!(BattleResult != null && BattleResult.Value == Labyrinth.BattleResult.Fled)) // If the player fled, don't move the enemy
-                {                                                                                   // TODO: This should probably only happen for the enemy that was battled, rather than all enemies
-                    foreach (Enemy enemy in Maze.Network.SelectMany(r => r.Select(l => l.Enemy)).Where(e => e != null))
+                {                                                                                   // TODO: This should probably only be the case for the enemy that was battled, rather than all enemies
+                    foreach (Enemy enemy in Maze.Network.SelectMany(r => r.Select(l => l?.Enemy)).Where(e => e != null))
                     {
                         if (Utils.Roll(CHANCE_FOR_ENEMY_MOVE))
                         {
-                            enemy.Move((Direction)Utils.Random.Next(3));
+                            enemy.Move(Utils.GetRandomFromList(enemy.Location.GetValidDirections()));
                         }
                     }
                 }
@@ -266,7 +271,7 @@ namespace Labyrinth
         {
             while (enemy.CurrentHP > 0 && player.CurrentHP > 0)
             {
-                Dictionary<char, string> actions = ValidBattleActions();
+                Dictionary<char, string> actions = GetValidBattleActions();
 
                 int uiOffset = DisplayBattleUI(player, enemy);
                 uiOffset += DisplayPrompt("", actions);
@@ -325,7 +330,7 @@ namespace Labyrinth
                     default:
                         throw new Exception("Invalid battle action.");
                 }
-
+                
                 if (enemy.CurrentHP > 0)
                 {
                     uiOffset += ProcessEnemyAttack(enemy, player);
@@ -342,6 +347,17 @@ namespace Labyrinth
             {
                 return Labyrinth.BattleResult.Won;
             }
+        }
+
+        private void Reset()
+        {
+            Maze = new Maze(MAZE_SIZE);
+            Player = new Player();
+            Difficulty = StartingDifficulty;
+            MovesTaken = 0;
+
+            Player.ItemGained += new EventHandler<ItemGainedEventArgs>(OnItemGained);
+            Player.StatsIncreased += new EventHandler<StatsIncreasedEventArgs>(OnStatsIncreased);
         }
 
         /// <summary>
@@ -370,7 +386,7 @@ namespace Labyrinth
         /// Returns the battle actions available to the player based on the items they have
         /// </summary>
         /// <returns>The valid actions available to the player</returns>
-        private Dictionary<char, string> ValidBattleActions()
+        private Dictionary<char, string> GetValidBattleActions()
         {
             Dictionary<char, string> actions = new Dictionary<char, string>();
 
@@ -402,22 +418,22 @@ namespace Labyrinth
         /// <param name="enemy">The enemy being attacked</param>
         /// <param name="attackWithBow">Whether the player is attacking with a bow</param>
         /// <returns>The number of lines written to the console</returns>
-        public int ProcessPlayerAttack(Player player, Enemy enemy, bool attackWithBow)
+        protected int ProcessPlayerAttack(Player player, Enemy enemy, bool attackWithBow)
         {
             string weaponName = attackWithBow ? "Bow" : player.Items.Contains(ItemType.Weapon) ? player.Items[ItemType.Weapon].ItemType.ToString() : "Fists";
             int offset = DisplayMessage($"You attack the {enemy.EnemyType} with your {weaponName}.");
 
-            Tuple<AttackResult, int> attackResult = attackWithBow ? player.AttackWithBow(enemy) : player.Attack(enemy);
-            if (attackResult.Item1 == AttackResult.Miss)
+            (AttackResult Result, int Damage) = attackWithBow ? player.AttackWithBow(enemy) : player.Attack(enemy);
+            if (Result == AttackResult.Miss)
             {
                 offset += DisplayMessage($"The {enemy.EnemyType} dodged your attack.");
             }
             else
             {
-                if (attackResult.Item1 == AttackResult.Crit)
+                if (Result == AttackResult.Crit)
                     offset += DisplayMessage("Critical hit!");
 
-                offset += DisplayMessage($"Dealt {attackResult.Item2} damage.");
+                offset += DisplayMessage($"Dealt {Damage} damage.");
             }
 
             return offset;
@@ -429,26 +445,26 @@ namespace Labyrinth
         /// <param name="enemy">The enemy attacking the player</param>
         /// <param name="player">The player</param>
         /// <returns>The number of lines writen to the console</returns>
-        public int ProcessEnemyAttack(Enemy enemy, Player player)
+        protected int ProcessEnemyAttack(Enemy enemy, Player player)
         {
             int offset = DisplayMessage($"The {enemy.EnemyType} attacks!");
-            Tuple<AttackResult, int> attackResult = enemy.Attack(player);
+            (AttackResult Result, int Damage) = enemy.Attack(player);
             
-            if (attackResult.Item1 == AttackResult.Miss)
+            if (Result == AttackResult.Miss)
             {
                 offset += DisplayMessage($"You dodge its attack.");
             }
             else
             {
-                if (attackResult.Item1 == AttackResult.Crit)
+                if (Result == AttackResult.Crit)
                     offset += DisplayMessage("Critical hit!");
 
-                offset += DisplayMessage($"You take {attackResult.Item2} damage.");
+                offset += DisplayMessage($"You take {Damage} damage.");
             }
 
             return offset;
         }
-#endregion
+        #endregion
 
         #region IO Methods
         /// <summary>
@@ -456,7 +472,7 @@ namespace Labyrinth
         /// </summary>
         /// <param name="validInputs">Uppercase characters reperesenting valid inputs</param>
         /// <returns>The uppercase character that the player entered</returns>
-        public char GetInput(params char[] validInputs)
+        public static char GetInput(params char[] validInputs)
         {
             char input;
 
@@ -476,7 +492,12 @@ namespace Labyrinth
             return input;
         }
 
-        public string GetInput(params string[] validInputs)
+        /// <summary>
+        /// Retrieves an input character based on a list of valid inputs
+        /// </summary>
+        /// <param name="validInputs">Case-insensitive strings reperesenting valid inputs</param>
+        /// <returns>The uppercase character that the player entered</returns>
+        public static string GetInput(params string[] validInputs)
         {
             string input;
 
@@ -502,8 +523,10 @@ namespace Labyrinth
         /// <param name="message">The message to display</param>
         /// <param name="extraLine">Whether an extra line should be printed after the message</param>
         /// <returns>The number of lines written to the console</returns>
-        public static int DisplayMessage(string message, bool extraLine = true)
+        protected static int DisplayMessage(string message, bool extraLine = true)
         {
+            Thread.Sleep(500);
+
             Console.WriteLine(message);
             int linesWritten = 1;
 
@@ -512,6 +535,7 @@ namespace Labyrinth
                 Console.WriteLine();
                 linesWritten++;
             }
+
             return linesWritten;
         }
 
@@ -521,8 +545,10 @@ namespace Labyrinth
         /// <param name="prompt">The message to display</param>
         /// <param name="actions">The actions that the player can take</param>
         /// <returns>The number of lines written to the console</returns>
-        public static int DisplayPrompt(string prompt, Dictionary<char, string> actions)
+        protected static int DisplayPrompt(string prompt, Dictionary<char, string> actions)
         {
+            Thread.Sleep(500);
+
             int linesWritten = 0;
 
             if (prompt != null)
@@ -565,8 +591,8 @@ namespace Labyrinth
         private void OnItemGained(object sender, ItemGainedEventArgs e)
         {
             string message = e.FirstItem ? "Found " : "Also found ";
-            message += e.Item.Stackable ? e.Item.Count.ToString() : Utils.AnOrA(e.Item.ItemType.ToString(), false);
-            message += " " + e.Item.ItemType.ToString();
+            message += e.Item.Stackable ? e.Item.Count.ToString() : Utils.AnOrA(e.Item.Name, false);
+            message += " " + e.Item.Name;
             message += e.ItemKept ? '!' : '.';
             DisplayMessage(message);
         }
@@ -580,20 +606,14 @@ namespace Labyrinth
         {
             string message = "";
 
-            foreach (Tuple<string, int> stat in e.StatsIncreased)
+            foreach (StatIncrease stat in e.StatsIncreased)
             {
-                switch (stat.Item1)
+                message += stat.Stat switch
                 {
-                    case Stats.XP:
-                        message += $"Earned {stat.Item2} XP.";
-                        break;
-                    case Stats.Level:
-                        message += $"Leveled up!\nReached level {stat.Item2}.";
-                        break;
-                    default:
-                        message += $"{stat.Item1} increased by {stat.Item2}.";
-                        break;
-                }
+                    Stats.XP    => $"Earned {stat.IncreaseAmount} XP.",
+                    Stats.Level => $"Leveled up!\nReached level {stat.NewAmount}.",
+                    _           => $"{stat.Stat} increased by {stat.IncreaseAmount}."
+                };
 
                 message += '\n';
             }
@@ -616,6 +636,17 @@ namespace Labyrinth
         private void GameOver()
         {
             DisplayMessage("Game over.");
+            DisplayPrompt("Play again?", YesNoActions);
+            switch ((YesNoAction)GetInput(YesNoActions.Select(a => a.Key).ToArray()))
+            {
+                case YesNoAction.Yes:
+                    Reset();
+                    Start();
+                    break;
+                default:
+                    return;
+            }
+            
         }
     }
 }

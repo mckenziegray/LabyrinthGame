@@ -70,37 +70,39 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Moves the unit in the given direction
+        /// Moves the unit in the given direction. The unit will not be moved if there is no location in the given direction.
         /// </summary>
-        /// <param name="dir">The direction to move</param>
-        /// <returns>The unit's new location</returns>
+        /// <param name="dir">The direction to move.</param>
+        /// <returns>The unit's new location.</returns>
         public Location Move(Direction dir)
         {
-            this.Location = this.Location.GetNeighbor(dir);
-            return this.Location;
+            Location newLocation = Location.GetNeighbor(dir);
+            if (newLocation is not null)
+                Location = newLocation;
+            return Location;
         }
 
         /// <summary>
         /// Randomly determines how much damage an attack will deal
         /// </summary>
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
-        protected Tuple<AttackResult, int> RollDamage()
+        protected (AttackResult Result, int Damage) RollDamage()
         {
-            Tuple<AttackResult, int> result;
+            (AttackResult Result, int Damage) result;
 
             if (Utils.Roll(CHANCE_FOR_MISS))
             {
-                result = new Tuple<AttackResult, int>(AttackResult.Miss, 0);
+                result = new(AttackResult.Miss, 0);
             }
             else
             {
                 if (Utils.Roll(CHANCE_FOR_CRIT))
                 {
-                    result = new Tuple<AttackResult, int>(AttackResult.Crit, Power * CRIT_MULTIPLIER);
+                    result = new(AttackResult.Crit, Power * CRIT_MULTIPLIER);
                 }
                 else
                 {
-                    result = new Tuple<AttackResult, int>(AttackResult.Hit, Power);
+                    result = new(AttackResult.Hit, Power);
                 }
             }
 
@@ -112,10 +114,10 @@ namespace Labyrinth
         /// </summary>
         /// <param name="other">The unit to attack</param>
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
-        public Tuple<AttackResult, int> Attack(Unit other)
+        public (AttackResult Result, int Damage) Attack(Unit other)
         {
-            Tuple<AttackResult, int> result = RollDamage();
-            other.Damage(result.Item2 - other.Defense);
+            (AttackResult Result, int Damage) result = RollDamage();
+            other.Damage(result.Damage - other.Defense);
             return result;
         }
     }

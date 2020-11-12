@@ -78,7 +78,15 @@ namespace LabyrinthTest
             Assert.IsTrue(list.Contains(item.ItemType));
             Assert.AreEqual(item.Count - (item.Count - 1), list.CountOf(item.ItemType));
 
+            list.Use(item.ItemType, 0);
+            Assert.IsTrue(list.Contains(item.ItemType));
+            Assert.AreEqual(1, list.CountOf(item.ItemType));
+
             list.Use(item.ItemType, 1);
+            Assert.IsFalse(list.Contains(item.ItemType));
+            Assert.AreEqual(0, list.CountOf(item.ItemType));
+
+            list.Use(item.ItemType, 0);
             Assert.IsFalse(list.Contains(item.ItemType));
             Assert.AreEqual(0, list.CountOf(item.ItemType));
         }

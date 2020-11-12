@@ -129,19 +129,17 @@ namespace Labyrinth
         /// <param name="amount">The number of items to consume</param>
         public void Use(ItemType item, int amount = 1)
         {
-            if (!Contains(item, amount))
-            {
+            if (amount < 0)
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            else if (amount == 0)
+                return;
+            else if (!Contains(item, amount))
                 throw new KeyNotFoundException($"{this.GetType().Name} does not contain enough {item}.");
-            }
             else
-            {
                 items[item].Count -= amount;
-            }
 
             if (items[item].Count < 1)
-            {
                 items.Remove(item);
-            }
         }
 
         /// <summary>

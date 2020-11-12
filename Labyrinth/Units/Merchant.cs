@@ -6,12 +6,12 @@ namespace Labyrinth
 {
     public struct MerchantDialogue
     {
-        public string Greeting;
-        public string IntroQuestion;
-        public string RepeatQuestion;
-        public string PriceError;
-        public string Items;
-        public string PartingMessage;
+        public string Greeting { get; set; }
+        public string IntroQuestion { get; set; }
+        public string RepeatQuestion { get; set; }
+        public string PriceError { get; set; }
+        public string Items { get; set; }
+        public string PartingMessage { get; set; }
     }
 
     public class Merchant : Unit
@@ -20,7 +20,6 @@ namespace Labyrinth
         private const int MAX_ITEMS = 7;
 
         private Location location;
-        private bool isMale;
 
         public MerchantDialogue Dialogue { get; private set; }
         public override Location Location
@@ -28,6 +27,9 @@ namespace Labyrinth
             get { return location; }
             set
             {
+                if (value is null)
+                    throw new ArgumentNullException($"Location cannot be null.");
+
                 location = value;
                 
                 if (location.Merchant != this)
@@ -45,7 +47,7 @@ namespace Labyrinth
                 {
                     item = Item.RandomItem(Items);
                 }
-                while (item.ItemType != ItemType.Gold);
+                while (item.ItemType == ItemType.Gold);
 
                 Items.Add(item); // TODO: This might not have the desired behavior
             }
@@ -53,12 +55,20 @@ namespace Labyrinth
             PopulateDialogue();
         }
 
+        public void Sell(ItemType itemType)
+        {
+            Items.Use(itemType);
+        }
+
         public void Sell(Item item)
         {
             Items.Use(item.ItemType);
+
+            // Need to update dialogue because item counts have changed
+            PopulateDialogue();
         }
 
-        public void PopulateDialogue()
+        protected void PopulateDialogue()
         {
             string itemStr = "";
             foreach (Item item in Items)
@@ -67,14 +77,7 @@ namespace Labyrinth
                 if (item.Stackable)
                     itemStr += $"{item.Count} ";
 
-                if (item is Armor)
-                    itemStr += $"{(item as Armor).ArmorType} ";
-                else if (item is Weapon)
-                    itemStr += $"{(item as Weapon).WeaponType} ";
-                else if (item is Shield)
-                    itemStr += $"{(item as Shield).ShieldType} ";
-
-                itemStr += $"{item.ItemType}\t{item.Value}\n";
+                itemStr += $"{item.Name}\t{item.Value}\n";
             }
 
             foreach (string action in Enum.GetNames(typeof(MerchantAction)))
@@ -82,7 +85,7 @@ namespace Labyrinth
                 itemStr += $"\t{action}";
             }
 
-            this.Dialogue = new MerchantDialogue()
+            Dialogue = new MerchantDialogue()
             {
                 Greeting = "\"You may find my wares useful in your quest.\"",
                 IntroQuestion = "\"What would you like?\"",

@@ -42,14 +42,14 @@ namespace Labyrinth
         /// Updates the player's stats according to the current <see cref="Level"/> and <see cref="Unit.Items"/>
         /// </summary>
         /// <returns>A list of tuples representing the stats that increased</returns>
-        private List<Tuple<string, int>> UpdateStats()
+        private List<StatIncrease> UpdateStats()
         {
-            List<Tuple<string, int>> increasedStats = new List<Tuple<string, int>>();
+            List<StatIncrease> increasedStats = new();
 
             int newPower = Level + (Items.Contains(ItemType.Weapon) ? (Items[ItemType.Weapon] as Weapon).Damage : 0);
             if (newPower != Power)
             {
-                increasedStats.Add(new Tuple<string, int>(Stats.Power, newPower - Power));
+                increasedStats.Add(new StatIncrease(Stats.Power, newPower - Power, newPower));
                 Power = newPower;
             }
 
@@ -57,7 +57,7 @@ namespace Labyrinth
                 + (Items.Contains(ItemType.Shield) ? (Items[ItemType.Shield] as Shield).Defense : 0);
             if (newDefense != Defense)
             {
-                increasedStats.Add(new Tuple<string, int>(Stats.Defense, newDefense - Defense));
+                increasedStats.Add(new StatIncrease(Stats.Defense, newDefense - Defense, newDefense));
                 Defense = newDefense;
             }
 
@@ -73,12 +73,12 @@ namespace Labyrinth
         /// <returns>True if the player leveled up; false otherwise</returns>
         public bool GiveXP(int amount)
         {
-            List<Tuple<string, int>> increasedStats = new List<Tuple<string, int>>();
+            List<StatIncrease> increasedStats = new();
             int curLevel = Level;
             bool leveledUp = false;
 
-            increasedStats.Add(new Tuple<string, int>(Stats.XP, amount));
             XP += amount;
+            increasedStats.Add(new(Stats.XP, amount, XP));
 
             for (int i = 0; i < XP_TO_LEVEL_UP.Length; i++)
             {
@@ -99,7 +99,7 @@ namespace Labyrinth
 
             if (leveledUp)
             {
-                increasedStats.Add(new Tuple<string, int>(Stats.Level, Level - curLevel));
+                increasedStats.Add(new StatIncrease(Stats.Level, Level - curLevel, Level));
                 increasedStats.AddRange(UpdateStats());
 
                 increasedStats = OrderStatsList(increasedStats);
@@ -115,15 +115,15 @@ namespace Labyrinth
         /// </summary>
         /// <param name="stats">The list of stats to sort</param>
         /// <returns>A new list that has been sorted</returns>
-        private List<Tuple<string, int>> OrderStatsList(List<Tuple<string, int>> stats)
+        private List<StatIncrease> OrderStatsList(List<StatIncrease> stats)
         {
-            List<Tuple<string, int>> orderedStats = new List<Tuple<string, int>>();
+            List<StatIncrease> orderedStats = new();
 
-            if (stats.Any(s => s.Item1 == Stats.XP))
-                orderedStats.Add(stats.Single(s => s.Item1 == Stats.XP));
+            if (stats.Any(s => s.Stat == Stats.XP))
+                orderedStats.Add(stats.Single(s => s.Stat == Stats.XP));
 
-            if (stats.Any(s => s.Item1 == Stats.Level))
-                orderedStats.Add(stats.Single(s => s.Item1 == Stats.Level));
+            if (stats.Any(s => s.Stat == Stats.Level))
+                orderedStats.Add(stats.Single(s => s.Stat == Stats.Level));
 
             orderedStats.AddRange(stats.Where(s => !orderedStats.Contains(s)));
 
@@ -135,7 +135,7 @@ namespace Labyrinth
         /// </summary>
         /// <param name="item">The item to give to the player</param>
         /// <param name="firstItem">Whether this is the first item in a group that the player is receiving</param>
-        public void GiveItem(Item item, bool firstItem = true)
+        public void GiveItem(Item item)
         {
             switch (item.ItemType)
             {
@@ -169,7 +169,7 @@ namespace Labyrinth
         {
             for (int i = 0; i < items.Count(); i++)
             {
-                GiveItem(items.ElementAt(i), i == 0);
+                GiveItem(items.ElementAt(i));
             }
         }
 
@@ -189,12 +189,12 @@ namespace Labyrinth
         /// Throws an <see cref="KeyNotFoundException"/> if the player does not have any arrows
         /// </summary>
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
-        public Tuple<AttackResult, int> UseArrow()
+        public (AttackResult Result, int Damage) UseArrow()
         {
             Items.Use(ItemType.Arrows);
 
-            Tuple<AttackResult, int> result = RollDamage();
-            return new Tuple<AttackResult, int>(result.Item1, (int)(result.Item2 * Item.BOW_DAMAGE_MULTIPLIER));
+            (AttackResult Result, int Damage) result = RollDamage();
+            return new(result.Result, (int)(result.Damage * Item.BOW_DAMAGE_MULTIPLIER));
         }
 
         /// <summary>
@@ -212,13 +212,13 @@ namespace Labyrinth
         /// </summary>
         /// <param name="other">The <see cref="Unit"/> to attack</param>
         /// <returns>A tuple containing the result of the attack and the amount of damage it does</returns>
-        public Tuple<AttackResult, int> AttackWithBow(Unit other)
+        public (AttackResult Result, int Damage) AttackWithBow(Unit other)
         {
             if (!Items.Contains(ItemType.Bow))
                 throw new KeyNotFoundException($"The player does not have a {ItemType.Bow}.");
 
-            Tuple<AttackResult, int> attackResult = UseArrow();
-            other.Damage(attackResult.Item2 - other.Defense);
+            (AttackResult Result, int Damage) attackResult = UseArrow();
+            other.Damage(attackResult.Damage - other.Defense);
 
             return attackResult;
         }

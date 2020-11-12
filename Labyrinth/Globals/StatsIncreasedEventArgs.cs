@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Labyrinth
 {
@@ -9,6 +8,6 @@ namespace Labyrinth
     /// </summary>
     public class StatsIncreasedEventArgs : EventArgs
     {
-        public List<Tuple<string, int>> StatsIncreased;
+        public List<StatIncrease> StatsIncreased;
     }
 }

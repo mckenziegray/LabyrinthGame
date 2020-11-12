@@ -80,6 +80,10 @@ namespace LabyrinthTest
 
             unit.Move((Direction)dir);
             Assert.AreEqual(neighborLoc, unit.Location);
+
+            // Try to move again. There is nowhere to go, so the unit should still be in the same place.
+            unit.Move((Direction)dir);
+            Assert.AreEqual(neighborLoc, unit.Location);
         }
     }
 }

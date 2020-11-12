@@ -18,6 +18,9 @@ namespace Labyrinth
             get { return location; }
             set
             {
+                if (value is null)
+                    throw new ArgumentNullException($"Location cannot be null.");
+
                 location = value;
                 
                 if (location.Enemy != this)

@@ -88,7 +88,7 @@ INSERT INTO [dbo].[Item]	([ItemType],	[Value],	[Stackable],	[MaxInitialCount])
 	VALUES					('Weapon',		0,			0,				1),
 							('Armor',		0,			0,				1),
 							('Shield',		0,			0,				1),
-							('Bow',			0,			0,				1),
+							('Bow',			100,		0,				1),
 							('Arrows',		2,			1,				3),
 							('Potions',		5,			1,				1),
 							('Gold',		1,			1,				5)

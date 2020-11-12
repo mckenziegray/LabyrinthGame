@@ -18,9 +18,11 @@
 
     public enum MerchantAction { Nothing }
 
+    public enum YesNoAction { Yes = 'Y', No = 'N' }
+
     public enum AttackResult { Miss, Hit, Crit }
 
     public enum BattleResult { Won, Fled, Lost }
 
-    public class Stats { public const string XP = "XP", Level = "level", MaxHP = "max HP", Power = "power", Defense = "defense"; } // Not an enum, but it sort of acts like one
+    public class Stats { public const string XP = "XP", Level = "Level", MaxHP = "Max HP", Power = "Power", Defense = "Defense"; } // Not an enum, but it sort of acts like one
 }

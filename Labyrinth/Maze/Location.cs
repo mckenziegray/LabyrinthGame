@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Labyrinth
 {
@@ -104,6 +106,11 @@ namespace Labyrinth
         public Location GetNeighbor(Direction dir)
         {
             return Neighbors[(int)dir];
+        }
+
+        public IEnumerable<Direction> GetValidDirections()
+        {
+            return ((int[])Enum.GetValues(typeof(Direction))).Where(d => Neighbors[d] is not null).Cast<Direction>();
         }
     }
 }
