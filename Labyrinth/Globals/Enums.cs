@@ -16,7 +16,7 @@
 
     public enum BattleAction { Attack = 'A', Bow = 'B', Potion = 'P', Flee= 'F' }
 
-    public enum MerchantAction { Nothing }
+    public enum MerchantAction { Nothing = '0' }
 
     public enum YesNoAction { Yes = 'Y', No = 'N' }
 

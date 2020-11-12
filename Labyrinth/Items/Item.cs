@@ -22,7 +22,7 @@ namespace Labyrinth
         public int Count { get; set; }
         public string Name => this switch
         {
-            Weapon => $"{((Weapon)this).WeaponType} {ItemType}",
+            Weapon => $"{((Weapon)this).WeaponType}",
             Armor => $"{((Armor)this).ArmorType} {ItemType}",
             Shield => $"{((Shield)this).ShieldType} {ItemType}",
             _ => ItemType.ToString()

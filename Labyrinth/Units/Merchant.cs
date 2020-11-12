@@ -10,7 +10,6 @@ namespace Labyrinth
         public string IntroQuestion { get; set; }
         public string RepeatQuestion { get; set; }
         public string PriceError { get; set; }
-        public string Items { get; set; }
         public string PartingMessage { get; set; }
     }
 
@@ -70,27 +69,11 @@ namespace Labyrinth
 
         protected void PopulateDialogue()
         {
-            string itemStr = "";
-            foreach (Item item in Items)
-            {
-                itemStr += $"\t";
-                if (item.Stackable)
-                    itemStr += $"{item.Count} ";
-
-                itemStr += $"{item.Name}\t{item.Value}\n";
-            }
-
-            foreach (string action in Enum.GetNames(typeof(MerchantAction)))
-            {
-                itemStr += $"\t{action}";
-            }
-
             Dialogue = new MerchantDialogue()
             {
                 Greeting = "\"You may find my wares useful in your quest.\"",
                 IntroQuestion = "\"What would you like?\"",
                 RepeatQuestion = "\"Anything else?\"",
-                Items = itemStr,
                 PartingMessage = "\"Farewell.\""
             };
         }

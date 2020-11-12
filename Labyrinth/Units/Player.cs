@@ -244,6 +244,8 @@ namespace Labyrinth
                 FirstItem = firstItem
             };
 
+            UpdateStats();
+
             ItemGained?.Invoke(this, eventArgs);
         }
 

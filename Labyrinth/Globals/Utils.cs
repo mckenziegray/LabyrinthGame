@@ -112,5 +112,36 @@ namespace Labyrinth
 
             return capitalizedWord;
         }
+
+        /// <summary>
+        /// Creates an action dictionary given an arbitrary list of items.
+        /// </summary>
+        /// <typeparam name="T">The type of the items in the list. Cannot have more than 9 items.</typeparam>
+        /// <param name="options">The list of items.</param>
+        /// <param name="nameFunction">The function to use to determine the name of each item.</param>
+        /// <returns>An action dictionary.s</returns>
+        public static Dictionary<char, string> CreateActions<T>(IList<T> options, Func<T, string> nameFunction = null)
+        {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+            else if (options.Count > 9)
+                throw new ArgumentOutOfRangeException(nameof(options), $"{nameof(options)} cannot contain more than 9 items. Length: {options.Count}");
+
+            // If no function is given for determining the name of each option, use ToString by default
+            nameFunction ??= t => t.ToString();
+
+            Dictionary<char, string> actions = new();
+
+            for (int i = 0; i < options.Count; i++)
+                actions.Add((i + 1).ToString().First(), nameFunction(options[i]));
+
+            return actions;
+        }
+
+        public static IEnumerable<T> GetEnumValues<T>()
+            where T : Enum
+        {
+            return Enum.GetValues(typeof(T)).Cast<T>();
+        }
     }
 }

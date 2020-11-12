@@ -77,7 +77,7 @@ namespace Labyrinth
 
                 // Player movement
                 DisplayPrompt("Which direction?", possibleDirections);
-                char dirChar = GetInput(possibleDirections.Keys.ToArray());
+                char dirChar = GetInput(possibleDirections.Keys);
                 Direction dir = (Direction)Enum.Parse(typeof(Direction), DirectionActions[dirChar]);
                 Location newLocation = Player.Move(dir);
 
@@ -150,13 +150,19 @@ namespace Labyrinth
                     bool doneShopping = false;
                     do
                     {
-                        DisplayMessage(Player.Location.Merchant.Dialogue.Items);
+                        Dictionary<char, string> purchaseActions = Utils.CreateActions(Player.Location.Merchant.Items.ToList(), i => string.Format($"{$"{i.Name} ({i.Count})",-24}{i.Value}"));
+                        foreach (MerchantAction action in Utils.GetEnumValues<MerchantAction>())
+                            purchaseActions.Add((char)action, action.ToString());
+
+                        DisplayPrompt("", purchaseActions, "\t") ;
                         DisplayMessage($"Gold: {Player.Items.CountOf(ItemType.Gold)}");
 
-                        string itemStr = GetInput(Player.Location.Merchant.Items.Select(i => i.Name).Concat(Enum.GetNames(typeof(MerchantAction))).ToArray());
-                        if (Enum.GetNames(typeof(ItemType)).Contains(itemStr))
+                        char inputChar = GetInput(purchaseActions.Keys);
+                        int inputInt = int.Parse(inputChar.ToString());
+
+                        if (inputInt > 0 && inputInt <= Player.Location.Merchant.Items.Count)
                         {
-                            Item itemToBuy = Player.Location.Merchant.Items[(ItemType)Enum.Parse(typeof(ItemType), itemStr)];
+                            Item itemToBuy = Player.Location.Merchant.Items.ElementAt(inputInt - 1);
                             if (Player.Items.CountOf(ItemType.Gold) >= itemToBuy.Value)
                             {
                                 Player.SpendGold(itemToBuy.Value);
@@ -172,11 +178,14 @@ namespace Labyrinth
                         }
                         else
                         {
-                            doneShopping = (Enum.Parse<MerchantAction>(itemStr)) switch
+                            switch ((MerchantAction)inputChar)
                             {
-                                MerchantAction.Nothing => true,
-                                _ => throw new NotSupportedException(),
-                            };
+                                case MerchantAction.Nothing:
+                                    doneShopping = true;
+                                    break;
+                                default:
+                                    throw new NotImplementedException();
+                            }
                         }
                     }
                     while (!doneShopping);
@@ -194,7 +203,7 @@ namespace Labyrinth
 
                     do
                     {
-                        action = GetInput(ChestActions.Keys.ToArray());
+                        action = GetInput(ChestActions.Keys);
 
                         switch (action)
                         {
@@ -281,7 +290,7 @@ namespace Labyrinth
                 int tempOffset = 0;
                 do
                 {
-                    action = GetInput(actions.Keys.ToArray());
+                    action = GetInput(actions.Keys);
 
                     if (!validAction)
                     {
@@ -420,7 +429,7 @@ namespace Labyrinth
         /// <returns>The number of lines written to the console</returns>
         protected int ProcessPlayerAttack(Player player, Enemy enemy, bool attackWithBow)
         {
-            string weaponName = attackWithBow ? "Bow" : player.Items.Contains(ItemType.Weapon) ? player.Items[ItemType.Weapon].ItemType.ToString() : "Fists";
+            string weaponName = attackWithBow ? "Bow" : player.Items.Contains(ItemType.Weapon) ? player.Items[ItemType.Weapon].Name : "Fists";
             int offset = DisplayMessage($"You attack the {enemy.EnemyType} with your {weaponName}.");
 
             (AttackResult Result, int Damage) = attackWithBow ? player.AttackWithBow(enemy) : player.Attack(enemy);
@@ -492,6 +501,11 @@ namespace Labyrinth
             return input;
         }
 
+        public static char GetInput(IEnumerable<char> validInputs)
+        {
+            return GetInput(validInputs.ToArray());
+        }
+
         /// <summary>
         /// Retrieves an input character based on a list of valid inputs
         /// </summary>
@@ -517,6 +531,11 @@ namespace Labyrinth
             return validInputs.First(i => i.ToLower() == input);
         }
 
+        public static string GetInput(IEnumerable<string> validInputs)
+        {
+            return GetInput(validInputs.ToArray());
+        }
+
         /// <summary>
         /// Prints a message to the console
         /// </summary>
@@ -525,8 +544,6 @@ namespace Labyrinth
         /// <returns>The number of lines written to the console</returns>
         protected static int DisplayMessage(string message, bool extraLine = true)
         {
-            Thread.Sleep(500);
-
             Console.WriteLine(message);
             int linesWritten = 1;
 
@@ -540,15 +557,14 @@ namespace Labyrinth
         }
 
         /// <summary>
-        /// Displays a message along with input options for the player
+        /// Displays a message along with input options for the player.
         /// </summary>
-        /// <param name="prompt">The message to display</param>
-        /// <param name="actions">The actions that the player can take</param>
-        /// <returns>The number of lines written to the console</returns>
-        protected static int DisplayPrompt(string prompt, Dictionary<char, string> actions)
+        /// <param name="prompt">The message to display.</param>
+        /// <param name="actions">The actions that the player can take.</param>
+        /// <param name="padding">Text that will appear before each option.</param>
+        /// <returns>The number of lines written to the console.</returns>
+        protected static int DisplayPrompt(string prompt, Dictionary<char, string> actions, string padding = "")
         {
-            Thread.Sleep(500);
-
             int linesWritten = 0;
 
             if (prompt != null)
@@ -559,7 +575,7 @@ namespace Labyrinth
 
             foreach (KeyValuePair<char, string> action in actions)
             {
-                Console.WriteLine($"{action.Key}: {action.Value}");
+                Console.WriteLine($"{padding}{action.Key}: {action.Value}");
                 linesWritten++;
             }
 
@@ -637,7 +653,7 @@ namespace Labyrinth
         {
             DisplayMessage("Game over.");
             DisplayPrompt("Play again?", YesNoActions);
-            switch ((YesNoAction)GetInput(YesNoActions.Select(a => a.Key).ToArray()))
+            switch ((YesNoAction)GetInput(YesNoActions.Select(a => a.Key)))
             {
                 case YesNoAction.Yes:
                     Reset();
