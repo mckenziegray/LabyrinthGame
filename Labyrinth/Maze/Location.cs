@@ -13,49 +13,37 @@ namespace Labyrinth
         private const int MIN_TRAP_DAMAGE = 2;
         private const int MAX_TRAP_DAMAGE = 4;
 
-        private Enemy enemy;
-        private Merchant merchant;
+        private Enemy _enemy;
+        private Merchant _merchant;
 
         public bool IsRoom { get; private set; }
         public Location[] Neighbors { get; set; }
         public ItemList Items { get; set; }
         public Chest Chest { get; private set; }
         public Trap Trap { get; private set; }
-        public bool IsTrapped
-        {
-            get
-            {
-                return Trap != null && Trap.IsActive;
-            }
-        }
+        public bool IsTrapped => Trap != null && Trap.IsActive;
         public Enemy Enemy
         {
-            get
-            {
-                return enemy;
-            }
+            get => _enemy;
             set
             {
-                enemy = value;
+                _enemy = value;
 
                 // Ensure the enemy's location is this
-                if (enemy != null && enemy.Location != this)
-                    enemy.Location = this;
+                if (_enemy != null && _enemy.Location != this)
+                    _enemy.Location = this;
             }
         }
         public Merchant Merchant
         {
-            get
-            {
-                return merchant;
-            }
+            get => _merchant;
             set
             {
-                merchant = value;
+                _merchant = value;
 
                 // Ensure the merchant's location is this
-                if (merchant != null && merchant.Location != this)
-                    merchant.Location = this;
+                if (_merchant != null && _merchant.Location != this)
+                    _merchant.Location = this;
             }
         }
 

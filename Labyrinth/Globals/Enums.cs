@@ -24,5 +24,5 @@
 
     public enum BattleResult { Won, Fled, Lost }
 
-    public class Stats { public const string XP = "XP", Level = "Level", MaxHP = "Max HP", Power = "Power", Defense = "Defense"; } // Not an enum, but it sort of acts like one
+    public class Stats { public const string XP = "XP", LEVEL = "Level", MAX_HP = "Max HP", POWER = "Power", DEFENSE = "Defense"; } // Not an enum, but it sort of acts like one
 }

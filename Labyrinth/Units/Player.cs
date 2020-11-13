@@ -49,7 +49,7 @@ namespace Labyrinth
             int newPower = Level + (Items.Contains(ItemType.Weapon) ? (Items[ItemType.Weapon] as Weapon).Damage : 0);
             if (newPower != Power)
             {
-                increasedStats.Add(new StatIncrease(Stats.Power, newPower - Power, newPower));
+                increasedStats.Add(new StatIncrease(Stats.POWER, newPower - Power, newPower));
                 Power = newPower;
             }
 
@@ -57,7 +57,7 @@ namespace Labyrinth
                 + (Items.Contains(ItemType.Shield) ? (Items[ItemType.Shield] as Shield).Defense : 0);
             if (newDefense != Defense)
             {
-                increasedStats.Add(new StatIncrease(Stats.Defense, newDefense - Defense, newDefense));
+                increasedStats.Add(new StatIncrease(Stats.DEFENSE, newDefense - Defense, newDefense));
                 Defense = newDefense;
             }
 
@@ -94,12 +94,14 @@ namespace Labyrinth
                     }
                 }
                 else
+                {
                     break;
+                }
             }
 
             if (leveledUp)
             {
-                increasedStats.Add(new StatIncrease(Stats.Level, Level - curLevel, Level));
+                increasedStats.Add(new StatIncrease(Stats.LEVEL, Level - curLevel, Level));
                 increasedStats.AddRange(UpdateStats());
 
                 increasedStats = OrderStatsList(increasedStats);
@@ -122,8 +124,8 @@ namespace Labyrinth
             if (stats.Any(s => s.Stat == Stats.XP))
                 orderedStats.Add(stats.Single(s => s.Stat == Stats.XP));
 
-            if (stats.Any(s => s.Stat == Stats.Level))
-                orderedStats.Add(stats.Single(s => s.Stat == Stats.Level));
+            if (stats.Any(s => s.Stat == Stats.LEVEL))
+                orderedStats.Add(stats.Single(s => s.Stat == Stats.LEVEL));
 
             orderedStats.AddRange(stats.Where(s => !orderedStats.Contains(s)));
 

@@ -13,36 +13,37 @@ namespace Labyrinth
         private const float CHANCE_FOR_MERCHANT = 0.1f;
         private const float CHANCE_TO_FLEE = 0.9f;
 
+        private readonly int STARTING_DIFFICULTY;
+
         public static bool MinotaurIsAlive { get; set; } = true;
         public static bool DragonIsAlive { get; set; } = true;
 
-        private Maze Maze;
-        private Player Player;
-        private readonly int StartingDifficulty;
-        private int Difficulty;
-        private int MovesTaken;
-        private BattleResult? BattleResult;
-        private readonly Dictionary<char, string> DirectionActions = new Dictionary<char, string>
+        private Maze _maze;
+        private Player _player;
+        private int _difficulty;
+        private int _movesTaken;
+        private BattleResult? _battleResult;
+        private readonly Dictionary<char, string> DIRECTION_ACTIONS = new Dictionary<char, string>
         {
             { 'N', Direction.North.ToString() },
             { 'E', Direction.East.ToString() },
             { 'S', Direction.South.ToString() },
             { 'W', Direction.West.ToString() }
         };
-        private readonly Dictionary<char, string> ChestActions = new Dictionary<char, string>
+        private readonly Dictionary<char, string> CHEST_ACTIONS = new Dictionary<char, string>
         {
             { (char)ChestAction.Open, "Open the chest" },
             { (char)ChestAction.Leave, "Don't open the chest" },
             { (char)ChestAction.Examine, "Examine the chest" }
         };
-        public readonly static Dictionary<char, string> BattleActions = new Dictionary<char, string>
+        private readonly static Dictionary<char, string> BATTLE_ACTIONS = new Dictionary<char, string>
         {
             { (char)BattleAction.Attack, "Normal attack" },
             { (char)BattleAction.Bow, "Bow attack" },
             { (char)BattleAction.Potion, "Use potion" },
             { (char)BattleAction.Flee, "Attempt to flee" }
         };
-        public readonly static Dictionary<char, string> YesNoActions = new Dictionary<char, string>
+        private readonly static Dictionary<char, string> YES_NO_ACTIONS = new Dictionary<char, string>
         {
             { (char)YesNoAction.Yes, "Yes" },
             { (char)YesNoAction.No, "No" }
@@ -54,7 +55,7 @@ namespace Labyrinth
         /// <param name="startingDifficulty">The starting difficulty of the game</param>
         public Game(int startingDifficulty)
         {
-            StartingDifficulty = startingDifficulty;
+            STARTING_DIFFICULTY = startingDifficulty;
             Reset();
         }
 
@@ -64,60 +65,60 @@ namespace Labyrinth
         public void Start()
         {
             // Place the player at a random starting location
-            Player.Location = Utils.GetRandomFromList<Location>(Maze.Network.SelectMany(l => l).ToList().Where(l => l != null));
+            _player.Location = Utils.GetRandomFromList<Location>(_maze.Network.SelectMany(l => l).ToList().Where(l => l != null));
 
             DisplayMessage("You enter the Labyrinth.");
 
             // Main game loop
             while (true)
             {
-                Dictionary<char, string> possibleDirections = DirectionActions
-                    .Where(a => Player.Location.Neighbors[(int)Enum.Parse(typeof(Direction), a.Value)] != null)
+                Dictionary<char, string> possibleDirections = DIRECTION_ACTIONS
+                    .Where(a => _player.Location.Neighbors[(int)Enum.Parse(typeof(Direction), a.Value)] != null)
                     .ToDictionary(a => a.Key, a => a.Value);
 
                 // Player movement
                 DisplayPrompt("Which direction?", possibleDirections);
                 char dirChar = GetInput(possibleDirections.Keys);
-                Direction dir = (Direction)Enum.Parse(typeof(Direction), DirectionActions[dirChar]);
-                Location newLocation = Player.Move(dir);
+                Direction dir = (Direction)Enum.Parse(typeof(Direction), DIRECTION_ACTIONS[dirChar]);
+                Location newLocation = _player.Move(dir);
 
                 #region Initialize player's new location
-                if (Player.Location.Enemy == null && Utils.Roll(CHANCE_FOR_ENEMY_SPAWN))
+                if (_player.Location.Enemy == null && Utils.Roll(CHANCE_FOR_ENEMY_SPAWN))
                 {
-                    Player.Location.Enemy = Enemy.RandomEnemy(Difficulty);
+                    _player.Location.Enemy = Enemy.RandomEnemy(_difficulty);
                 }
                 else if (Utils.Roll(CHANCE_FOR_MERCHANT))
                 {
-                    Player.Location.Merchant = new Merchant();
+                    _player.Location.Merchant = new Merchant();
                 }
                 #endregion
 
                 #region Room is trapped
-                if (Player.Location.IsTrapped)
+                if (_player.Location.IsTrapped)
                 {
                     DisplayMessage("You feel a plate sink under your foot.");
                     DisplayMessage("Flames erupt from the floor!");
-                    int trapDamage = Player.Location.Trap.Trigger();
-                    Player.Damage(trapDamage);
+                    int trapDamage = _player.Location.Trap.Trigger();
+                    _player.Damage(trapDamage);
                     DisplayMessage($"You take {trapDamage} points of damage.");
                 }
                 #endregion
 
                 #region Found an enemy
-                if (Player.Location.Enemy != null)
+                if (_player.Location.Enemy != null)
                 {
-                    BattleResult = Battle(Player, Player.Location.Enemy);
+                    _battleResult = Battle(_player, _player.Location.Enemy);
 
-                    switch (BattleResult.Value)
+                    switch (_battleResult.Value)
                     {
                         case Labyrinth.BattleResult.Won:
-                            DisplayMessage($"You defeat the {Player.Location.Enemy.EnemyType}!");
-                            Player.GiveXP(Player.Location.Enemy.XP);
+                            DisplayMessage($"You defeat the {_player.Location.Enemy.EnemyType}!");
+                            _player.GiveXP(_player.Location.Enemy.XP);
 
-                            if (Player.Location.Enemy.EnemyType == EnemyType.Minotaur)
+                            if (_player.Location.Enemy.EnemyType == EnemyType.Minotaur)
                                 MinotaurIsAlive = false;
 
-                            Player.Location.Enemy = null;
+                            _player.Location.Enemy = null;
                             break;
                         case Labyrinth.BattleResult.Fled:
                             DisplayMessage("You ran away.");
@@ -129,47 +130,47 @@ namespace Labyrinth
                 }
                 else
                 {
-                    BattleResult = null;
+                    _battleResult = null;
                 }
                 #endregion
 
                 #region Found a merchant
-                if (Player.Location.Merchant != null)
+                if (_player.Location.Merchant != null)
                 {
                     DisplayMessage("A cloaked figure appears before you.");
-                    DisplayMessage(Player.Location.Merchant.Dialogue.Greeting);
+                    DisplayMessage(_player.Location.Merchant.Dialogue.Greeting);
 
-                    if (Player.JunkValue > 0)
+                    if (_player.JunkValue > 0)
                     {
-                        Player.SellJunk();
+                        _player.SellJunk();
                         DisplayMessage("You sell your unused items.");
                     }
 
-                    DisplayMessage(Player.Location.Merchant.Dialogue.IntroQuestion);
+                    DisplayMessage(_player.Location.Merchant.Dialogue.IntroQuestion);
 
                     bool doneShopping = false;
                     do
                     {
-                        Dictionary<char, string> purchaseActions = Utils.CreateActions(Player.Location.Merchant.Items.ToList(), i => string.Format($"{$"{i.Name} ({i.Count})",-24}{i.Value}"));
+                        Dictionary<char, string> purchaseActions = Utils.CreateActions(_player.Location.Merchant.Items.ToList(), i => string.Format($"{$"{i.Name} ({i.Count})",-24}{i.Value}"));
                         foreach (MerchantAction action in Utils.GetEnumValues<MerchantAction>())
                             purchaseActions.Add((char)action, action.ToString());
 
                         DisplayPrompt("", purchaseActions, "\t") ;
-                        DisplayMessage($"Gold: {Player.Items.CountOf(ItemType.Gold)}");
+                        DisplayMessage($"Gold: {_player.Items.CountOf(ItemType.Gold)}");
 
                         char inputChar = GetInput(purchaseActions.Keys);
                         int inputInt = int.Parse(inputChar.ToString());
 
-                        if (inputInt > 0 && inputInt <= Player.Location.Merchant.Items.Count)
+                        if (inputInt > 0 && inputInt <= _player.Location.Merchant.Items.Count)
                         {
-                            Item itemToBuy = Player.Location.Merchant.Items.ElementAt(inputInt - 1);
-                            if (Player.Items.CountOf(ItemType.Gold) >= itemToBuy.Value)
+                            Item itemToBuy = _player.Location.Merchant.Items.ElementAt(inputInt - 1);
+                            if (_player.Items.CountOf(ItemType.Gold) >= itemToBuy.Value)
                             {
-                                Player.SpendGold(itemToBuy.Value);
-                                Player.Items.Add(itemToBuy);
-                                Player.Location.Merchant.Sell(itemToBuy);
+                                _player.SpendGold(itemToBuy.Value);
+                                _player.Items.Add(itemToBuy);
+                                _player.Location.Merchant.Sell(itemToBuy);
 
-                                DisplayMessage(Player.Location.Merchant.Dialogue.RepeatQuestion);
+                                DisplayMessage(_player.Location.Merchant.Dialogue.RepeatQuestion);
                             }
                             else
                             {
@@ -190,27 +191,27 @@ namespace Labyrinth
                     }
                     while (!doneShopping);
 
-                    DisplayMessage(Player.Location.Merchant.Dialogue.PartingMessage);
+                    DisplayMessage(_player.Location.Merchant.Dialogue.PartingMessage);
                 }
                 #endregion
 
                 #region Found a chest
-                if (Player.Location.Chest != null)
+                if (_player.Location.Chest != null)
                 {
-                    DisplayPrompt("You find a chest.", ChestActions);
+                    DisplayPrompt("You find a chest.", CHEST_ACTIONS);
 
                     char action;
 
                     do
                     {
-                        action = GetInput(ChestActions.Keys);
+                        action = GetInput(CHEST_ACTIONS.Keys);
 
                         switch (action)
                         {
                             case (char)ChestAction.Examine:
-                                if (Player.Location.Chest.StatusVisible)
+                                if (_player.Location.Chest.StatusVisible)
                                 {
-                                    if (Player.Location.Chest.IsTrapped)
+                                    if (_player.Location.Chest.IsTrapped)
                                         DisplayMessage("The chest looks booby-trapped.");
                                     else
                                         DisplayMessage("It appears safe to open");
@@ -221,16 +222,16 @@ namespace Labyrinth
                                 }
                                 break;
                             case (char)ChestAction.Open:
-                                if (Player.Location.Chest.IsTrapped)
+                                if (_player.Location.Chest.IsTrapped)
                                 {
                                     DisplayMessage("The chest was booby-trapped!");
-                                    int trapDamage = Player.Location.Chest.Trap.Trigger();
-                                    Player.Damage(trapDamage);
+                                    int trapDamage = _player.Location.Chest.Trap.Trigger();
+                                    _player.Damage(trapDamage);
                                     DisplayMessage($"You take {trapDamage} points of damage.");
                                 }
 
                                 DisplayMessage("You open the chest.");
-                                Player.GiveLoot(Player.Location.Chest.Items);
+                                _player.GiveLoot(_player.Location.Chest.Items);
                                 break;
                             default:
                                 break;
@@ -241,21 +242,21 @@ namespace Labyrinth
                 #endregion
 
                 #region Found an item
-                if (Player.Location.Items.Any())
+                if (_player.Location.Items.Any())
                 {
                     DisplayMessage("There's something on the floor.");
-                    Player.GiveLoot(Player.Location.Items);
+                    _player.GiveLoot(_player.Location.Items);
                 }
                 #endregion
 
-                MovesTaken++;
+                _movesTaken++;
 
                 UpdateDifficulty();
                 
                 // Move enemies
-                if (!(BattleResult != null && BattleResult.Value == Labyrinth.BattleResult.Fled)) // If the player fled, don't move the enemy
+                if (!(_battleResult != null && _battleResult.Value == Labyrinth.BattleResult.Fled)) // If the player fled, don't move the enemy
                 {                                                                                   // TODO: This should probably only be the case for the enemy that was battled, rather than all enemies
-                    foreach (Enemy enemy in Maze.Network.SelectMany(r => r.Select(l => l?.Enemy)).Where(e => e != null))
+                    foreach (Enemy enemy in _maze.Network.SelectMany(r => r.Select(l => l?.Enemy)).Where(e => e != null))
                     {
                         if (Utils.Roll(CHANCE_FOR_ENEMY_MOVE))
                         {
@@ -264,7 +265,7 @@ namespace Labyrinth
                     }
                 }
 
-                Player.Location.Merchant = null;
+                _player.Location.Merchant = null;
             }
 
         }
@@ -348,25 +349,18 @@ namespace Labyrinth
                 //ClearLines(uiOffset);
             }
 
-            if (player.CurrentHP <= 0)
-            {
-                return Labyrinth.BattleResult.Lost;
-            }
-            else
-            {
-                return Labyrinth.BattleResult.Won;
-            }
+            return player.CurrentHP <= 0 ? BattleResult.Lost : BattleResult.Won;
         }
 
         private void Reset()
         {
-            Maze = new Maze(MAZE_SIZE);
-            Player = new Player();
-            Difficulty = StartingDifficulty;
-            MovesTaken = 0;
+            _maze = new Maze(MAZE_SIZE);
+            _player = new Player();
+            _difficulty = STARTING_DIFFICULTY;
+            _movesTaken = 0;
 
-            Player.ItemGained += new EventHandler<ItemGainedEventArgs>(OnItemGained);
-            Player.StatsIncreased += new EventHandler<StatsIncreasedEventArgs>(OnStatsIncreased);
+            _player.ItemGained += new EventHandler<ItemGainedEventArgs>(OnItemGained);
+            _player.StatsIncreased += new EventHandler<StatsIncreasedEventArgs>(OnStatsIncreased);
         }
 
         /// <summary>
@@ -399,16 +393,16 @@ namespace Labyrinth
         {
             Dictionary<char, string> actions = new Dictionary<char, string>();
 
-            foreach (var action in BattleActions)
+            foreach (KeyValuePair<char, string> action in BATTLE_ACTIONS)
             {
                 switch (action.Key)
                 {
                     case (char)BattleAction.Bow:
-                        if (Player.Items.Contains(ItemType.Bow))
+                        if (_player.Items.Contains(ItemType.Bow))
                             actions.Add(action.Key, action.Value);
                         break;
                     case (char)BattleAction.Potion:
-                        if (Player.Items.Contains(ItemType.Potions))
+                        if (_player.Items.Contains(ItemType.Potions))
                             actions.Add(action.Key, action.Value);
                         break;
                     default:
@@ -432,17 +426,17 @@ namespace Labyrinth
             string weaponName = attackWithBow ? "Bow" : player.Items.Contains(ItemType.Weapon) ? player.Items[ItemType.Weapon].Name : "Fists";
             int offset = DisplayMessage($"You attack the {enemy.EnemyType} with your {weaponName}.");
 
-            (AttackResult Result, int Damage) = attackWithBow ? player.AttackWithBow(enemy) : player.Attack(enemy);
-            if (Result == AttackResult.Miss)
+            (AttackResult result, int damage) = attackWithBow ? player.AttackWithBow(enemy) : player.Attack(enemy);
+            if (result == AttackResult.Miss)
             {
                 offset += DisplayMessage($"The {enemy.EnemyType} dodged your attack.");
             }
             else
             {
-                if (Result == AttackResult.Crit)
+                if (result == AttackResult.Crit)
                     offset += DisplayMessage("Critical hit!");
 
-                offset += DisplayMessage($"Dealt {Damage} damage.");
+                offset += DisplayMessage($"Dealt {damage} damage.");
             }
 
             return offset;
@@ -457,18 +451,18 @@ namespace Labyrinth
         protected int ProcessEnemyAttack(Enemy enemy, Player player)
         {
             int offset = DisplayMessage($"The {enemy.EnemyType} attacks!");
-            (AttackResult Result, int Damage) = enemy.Attack(player);
+            (AttackResult result, int damage) = enemy.Attack(player);
             
-            if (Result == AttackResult.Miss)
+            if (result == AttackResult.Miss)
             {
                 offset += DisplayMessage($"You dodge its attack.");
             }
             else
             {
-                if (Result == AttackResult.Crit)
+                if (result == AttackResult.Crit)
                     offset += DisplayMessage("Critical hit!");
 
-                offset += DisplayMessage($"You take {Damage} damage.");
+                offset += DisplayMessage($"You take {damage} damage.");
             }
 
             return offset;
@@ -627,7 +621,7 @@ namespace Labyrinth
                 message += stat.Stat switch
                 {
                     Stats.XP    => $"Earned {stat.IncreaseAmount} XP.",
-                    Stats.Level => $"Leveled up!\nReached level {stat.NewAmount}.",
+                    Stats.LEVEL => $"Leveled up!\nReached level {stat.NewAmount}.",
                     _           => $"{stat.Stat} increased by {stat.IncreaseAmount}."
                 };
 
@@ -643,7 +637,7 @@ namespace Labyrinth
         /// </summary>
         private void UpdateDifficulty()
         {
-            Difficulty = StartingDifficulty + ((Player.Power + Player.Defense) / 2) + (MovesTaken / 10);
+            _difficulty = STARTING_DIFFICULTY + ((_player.Power + _player.Defense) / 2) + (_movesTaken / 10);
         }
 
         /// <summary>
@@ -652,8 +646,8 @@ namespace Labyrinth
         private void GameOver()
         {
             DisplayMessage("Game over.");
-            DisplayPrompt("Play again?", YesNoActions);
-            switch ((YesNoAction)GetInput(YesNoActions.Select(a => a.Key)))
+            DisplayPrompt("Play again?", YES_NO_ACTIONS);
+            switch ((YesNoAction)GetInput(YES_NO_ACTIONS.Select(a => a.Key)))
             {
                 case YesNoAction.Yes:
                     Reset();

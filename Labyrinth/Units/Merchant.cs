@@ -18,21 +18,21 @@ namespace Labyrinth
         private const int MIN_ITEMS = 3;
         private const int MAX_ITEMS = 7;
 
-        private Location location;
+        private Location _location;
 
         public MerchantDialogue Dialogue { get; private set; }
         public override Location Location
         {
-            get { return location; }
+            get => _location;
             set
             {
                 if (value is null)
                     throw new ArgumentNullException($"Location cannot be null.");
 
-                location = value;
-                
-                if (location.Merchant != this)
-                    location.Merchant = this;
+                _location = value;
+
+                if (_location.Merchant != this)
+                    _location.Merchant = this;
             }
         }
 

@@ -14,7 +14,7 @@ namespace Labyrinth
         public const float BOW_DAMAGE_MULTIPLIER = 1.5f;
         public const int POTION_HEAL_AMOUNT = 10;
 
-        private readonly int _maxInitialCount;
+        private readonly int MAX_INITIAL_COUNT;
 
         public ItemType ItemType { get; private set; }
         public int Value { get; protected set; }
@@ -41,12 +41,9 @@ namespace Labyrinth
             ItemType = type;
             Value = data.Value;
             Stackable = data.Stackable;
-            _maxInitialCount = data.MaxInitialCount;
+            MAX_INITIAL_COUNT = data.MaxInitialCount;
 
-            if (Stackable)
-                Count = Utils.Random.Next(1, _maxInitialCount);
-            else
-                Count = 1;
+            Count = Stackable ? Utils.Random.Next(1, MAX_INITIAL_COUNT) : 1;
         }
 
         /// <summary>

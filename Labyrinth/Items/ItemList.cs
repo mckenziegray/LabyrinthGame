@@ -10,25 +10,19 @@ namespace Labyrinth
     /// </summary>
     public class ItemList : IEnumerable<Item>
     {
-        private Dictionary<ItemType, Item> items;
+        private Dictionary<ItemType, Item> _items;
 
         public bool IsReadOnly => false;
-        public int Count
-        {
-            get
-            {
-                return items.Count(kvp => this.Contains(kvp.Key));
-            }
-        }
+        public int Count => _items.Count(kvp => Contains(kvp.Key));
 
         public ItemList()
         {
-            items = new Dictionary<ItemType, Item>();
+            _items = new Dictionary<ItemType, Item>();
         }
 
         public ItemList(IEnumerable<Item> items)
         {
-            this.items = new Dictionary<ItemType, Item>(items.Select(i => new KeyValuePair<ItemType, Item>(i.ItemType, i)));
+            _items = new Dictionary<ItemType, Item>(items.Select(i => new KeyValuePair<ItemType, Item>(i.ItemType, i)));
         }
 
         /// <summary>
@@ -38,19 +32,8 @@ namespace Labyrinth
         /// <returns>The item of the corresponding type</returns>
         public Item this[ItemType key]
         {
-            get
-            {
-                if (!items.ContainsKey(key))
-                {
-                    return null;
-                }
-
-                return items[key];
-            }
-            private set
-            {
-                items[key] = value;
-            }
+            get => !_items.ContainsKey(key) ? null : _items[key];
+            private set => _items[key] = value;
         }
 
         /// <summary>
@@ -59,13 +42,13 @@ namespace Labyrinth
         /// <param name="item"></param>
         public void Add(Item item)
         {
-            if (items.ContainsKey(item.ItemType))
+            if (_items.ContainsKey(item.ItemType))
             {
-                items[item.ItemType].Count += item.Count;
+                _items[item.ItemType].Count += item.Count;
             }
             else
             {
-                items.Add(item.ItemType, item);
+                _items.Add(item.ItemType, item);
             }
         }
 
@@ -92,7 +75,7 @@ namespace Labyrinth
             Item itemNotKept = null;
 
             // Either the list doesn't contain the item, or the list can hold more
-            if (!items.ContainsKey(item.ItemType) || item.Stackable)
+            if (!_items.ContainsKey(item.ItemType) || item.Stackable)
             {
                 Add(item);
             }
@@ -119,7 +102,7 @@ namespace Labyrinth
         /// <returns>True if there are at least <paramref name="amount"/> of the given item in the list.</returns>
         public bool Contains(ItemType item, int amount = 1)
         {
-            return items.ContainsKey(item) && items[item] != null && items[item].Count >= amount;
+            return _items.ContainsKey(item) && _items[item] != null && _items[item].Count >= amount;
         }
 
         /// <summary>
@@ -134,12 +117,12 @@ namespace Labyrinth
             else if (amount == 0)
                 return;
             else if (!Contains(item, amount))
-                throw new KeyNotFoundException($"{this.GetType().Name} does not contain enough {item}.");
+                throw new KeyNotFoundException($"{GetType().Name} does not contain enough {item}.");
             else
-                items[item].Count -= amount;
+                _items[item].Count -= amount;
 
-            if (items[item].Count < 1)
-                items.Remove(item);
+            if (_items[item].Count < 1)
+                _items.Remove(item);
         }
 
         /// <summary>
@@ -162,17 +145,17 @@ namespace Labyrinth
 
         public int CountOf(ItemType item)
         {
-            return Contains(item) ? items[item].Count : 0;
+            return Contains(item) ? _items[item].Count : 0;
         }
 
         public IEnumerator<Item> GetEnumerator()
         {
-            return items.Values.Where(i => i.Count > 0).GetEnumerator();
+            return _items.Values.Where(i => i.Count > 0).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return items.Values.Where(i => i.Count > 0).GetEnumerator();
+            return _items.Values.Where(i => i.Count > 0).GetEnumerator();
         }
     }
 }
